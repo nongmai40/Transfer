@@ -1,0 +1,1143 @@
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <style>
+            /* Custom styles for better look and feel */
+            body {
+                font-family: 'Inter', sans-serif; /* Or a suitable Thai font if needed */
+                background-color: #f0f4ff; /* Light blue background */
+            }
+            /* Style for clickable checkbox rows */
+            .checkbox-row label {
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                padding: 0.5rem;
+                border-radius: 0.375rem; /* rounded-md */
+                transition: background-color 0.2s ease-in-out;
+            }
+            .checkbox-row label:hover {
+                background-color: #e0e7ff; /* Lighter indigo on hover */
+            }
+            .checkbox-row input[type="checkbox"] {
+                margin-right: 0.75rem; /* mr-3 */
+                cursor: pointer;
+            }
+            /* Custom button styles */
+            .btn {
+                padding: 0.75rem 1.5rem;
+                border-radius: 0.5rem; /* rounded-lg */
+                font-weight: 600;
+                transition: all 0.3s ease;
+                cursor: pointer;
+                text-align: center;
+            }
+            .btn-primary {
+                background-color: #6366f1; /* indigo-500 */
+                color: white;
+                border: 1px solid #6366f1;
+            }
+            .btn-primary:hover {
+                background-color: #4f46e5; /* indigo-600 */
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            }
+            .btn-secondary {
+                background-color: white;
+                color: #6366f1; /* indigo-500 */
+                border: 1px solid #6366f1;
+            }
+            .btn-secondary:hover {
+                background-color: #f0f4ff; /* Light blue background */
+            }
+            .btn-danger {
+                background-color: #ef4444; /* red-500 */
+                color: white;
+                border: 1px solid #ef4444;
+            }
+            .btn-danger:hover {
+                background-color: #dc2626; /* red-600 */
+            }
+            /* Navigation styles */
+            .nav-button {
+                padding: 0.75rem 1.5rem;
+                border-radius: 0.5rem 0.5rem 0 0; /* Rounded top corners */
+                font-weight: 600;
+                cursor: pointer;
+                background-color: #e0e7ff; /* Lighter indigo */
+                color: #4338ca; /* indigo-800 */
+                border: 1px solid #c7d2fe; /* indigo-200 */
+                border-bottom: none;
+                margin-right: 0.25rem;
+                transition: background-color 0.2s ease;
+            }
+            .nav-button.active {
+                background-color: #6366f1; /* indigo-500 */
+                color: white;
+                border-color: #6366f1;
+            }
+            .nav-button:not(.active):hover {
+                background-color: #c7d2fe; /* indigo-200 */
+            }
+            /* Section container */
+            .section-container {
+                background-color: white;
+                padding: 1.5rem; /* p-6 */
+                border-radius: 0 0.5rem 0.5rem 0.5rem; /* Rounded bottom corners */
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+                border: 1px solid #c7d2fe; /* indigo-200 */
+                border-top: none;
+            }
+            /* Input and select styling */
+            input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea {
+                border: 1px solid #c7d2fe; /* indigo-200 */
+                padding: 0.5rem 0.75rem;
+                border-radius: 0.375rem; /* rounded-md */
+                width: 100%;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            }
+            input[type="text"]:focus, input[type="date"]:focus, input[type="time"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+                outline: none;
+                border-color: #6366f1; /* indigo-500 */
+                box-shadow: 0 0 0 2px #a5b4fc; /* indigo-300 focus ring */
+            }
+            /* Card styling for log entries */
+            .log-card {
+                background-color: #f8fafc; /* slate-50 */
+                border: 1px solid #e2e8f0; /* slate-200 */
+                border-radius: 0.5rem; /* rounded-lg */
+                padding: 1rem;
+                margin-bottom: 1rem;
+                box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            }
+            .log-card h3 {
+                color: #4f46e5; /* indigo-600 */
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+            }
+            .log-card h4 {
+                 color: #6366f1; /* indigo-500 */
+                 font-weight: 600;
+                 margin-bottom: 0.5rem;
+                 margin-top: 1rem; /* Add some space above subheadings */
+                 padding-top: 0.75rem; /* Add padding above */
+                 border-top: 1px dashed #cbd5e1; /* slate-300 dashed border */
+            }
+
+            /* PDF specific styles (applied during generation) */
+            .pdf-container {
+                font-family: sans-serif; /* Use a standard font for PDF */
+                padding: 20px;
+                border: 1px solid #ccc;
+                background-color: white;
+                color: black;
+                width: 210mm; /* A4 width */
+                box-sizing: border-box;
+            }
+            .pdf-container h1, .pdf-container h2 {
+                color: #6366f1;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 5px;
+                margin-bottom: 10px;
+            }
+            .pdf-container h1 { font-size: 18pt; }
+            .pdf-container h2 { font-size: 14pt; }
+            .pdf-container p, .pdf-container li { font-size: 10pt; margin-bottom: 5px; }
+            .pdf-container .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+            .pdf-container .grid > div { break-inside: avoid; } /* Prevent breaking inside grid items */
+            .pdf-container ul { list-style: disc; padding-left: 20px; margin-top: 5px; margin-bottom: 10px;}
+            .pdf-container .section { margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 5px; }
+            .pdf-container .label { font-weight: bold; display: inline-block; min-width: 120px; }
+            .pdf-container .value { display: inline-block; }
+
+            /* Hide elements not needed in PDF (e.g., action buttons, forms) */
+            .pdf-hide-in-output { display: none !important; }
+
+        </style>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+        <style>
+            /* Apply Sarabun if needed, or keep Inter */
+            body {
+                font-family: 'Sarabun', sans-serif;
+            }
+        </style>
+    </head>
+    <body class="p-4 md:p-8">
+
+        <div class="max-w-4xl mx-auto">
+            <header class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-indigo-700">Transfer Anes KPH</h1>
+                <p class="text-indigo-500">ระบบ Checklist สำหรับการเคลื่อนย้ายผู้ป่วย</p>
+            </header>
+
+            <nav class="mb-0 flex">
+                <button id="nav-part1" class="nav-button active" onclick="showSection('part1')">1. เตรียมก่อนย้าย</button>
+                <button id="nav-part2" class="nav-button" onclick="showSection('part2')">2. ทะเบียน</button>
+                </nav>
+
+            <section id="part1" class="section-container">
+                <h2 class="text-xl font-semibold text-indigo-600 mb-4 border-b pb-2">ข้อมูลเตรียมก่อนเคลื่อนย้าย</h2>
+                <form id="pre-transfer-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-indigo-100 rounded-lg bg-indigo-50">
+                        <div>
+                            <label for="hn" class="block text-sm font-medium text-gray-700 mb-1">HN:</label>
+                            <input type="text" id="hn" name="hn" required>
+                        </div>
+                        <div>
+                            <label for="patient-name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ป่วย:</label>
+                            <input type="text" id="patient-name" name="patientName" required>
+                        </div>
+                        <div>
+                            <label for="operating-room" class="block text-sm font-medium text-gray-700 mb-1">ห้องผ่าตัด:</label>
+                            <select id="operating-room" name="operatingRoom" required>
+                                <option value="" disabled selected>เลือกห้องผ่าตัด</option>
+                                <option value="ห้อง 1">ห้อง 1</option>
+                                <option value="ห้อง 2">ห้อง 2</option>
+                                <option value="ห้อง 3">ห้อง 3</option>
+                                <option value="ห้อง 4">ห้อง 4</option>
+                                <option value="ห้อง 5">ห้อง 5</option>
+                                <option value="ห้อง 6">ห้อง 6</option>
+                                <option value="ห้อง 7">ห้อง 7</option>
+                                <option value="ห้อง 8">ห้อง 8</option>
+                                <option value="ห้อง 9">ห้อง 9</option>
+                                <option value="ห้อง 10">ห้อง 10</option>
+                                <option value="ห้อง 11">ห้อง 11</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">ย้ายไป:</label>
+                            <select id="destination" name="destination" required>
+                                <option value="" disabled selected>เลือกปลายทาง</option>
+                                <option value="ICU รวม">ICU รวม</option>
+                                <option value="ICU med1">ICU med1</option>
+                                <option value="ICU med2">ICU med2</option>
+                                <option value="ICU med3">ICU med3</option>
+                                <option value="ศัลยกรรมทั่วไป">ศัลยกรรมทั่วไป</option>
+                                <option value="ศัลยกรรมหญิง">ศัลยกรรมหญิง</option>
+                                <option value="ศัลยกรรมอุบัติเหตุ">ศัลยกรรมอุบัติเหตุ</option>
+                                <option value="ศัลยกรรมกระดูก">ศัลยกรรมกระดูก</option>
+                                <option value="สงฆ์ หู คอ จมูก">สงฆ์ หู คอ จมูก</option>
+                                <option value="กุมารเวชกรรม">กุมารเวชกรรม</option>
+                                <option value="สูติ นรีเวช">สูติ นรีเวช</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label for="transfer-date" class="block text-sm font-medium text-gray-700 mb-1">วันที่:</label>
+                            <input type="date" id="transfer-date" name="transferDate" required>
+                        </div>
+                        <div>
+                            <label for="transfer-time" class="block text-sm font-medium text-gray-700 mb-1">เวลาย้าย:</label>
+                            <input type="time" id="transfer-time" name="transferTime" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <fieldset class="p-4 border border-blue-100 rounded-lg bg-blue-50 space-y-2">
+                            <legend class="text-md font-semibold text-blue-700 mb-2">Airway oxygen transfer</legend>
+                            <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="airway" value="Endotracheal tube"> Endotracheal tube
+                                </label>
+                            </div>
+                            <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="airway" value="Tracheostomy tube"> Tracheostomy tube
+                                </label>
+                            </div>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="airway" value="Mask with bag"> Mask with bag
+                                </label>
+                            </div>
+                            <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="airway" value="Nasal Canula"> Nasal Canula
+                                </label>
+                            </div>
+                            <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="airway" value="Other" onchange="toggleOtherInput(this, 'airway-other-input')"> อื่นๆ
+                                </label>
+                            </div>
+                             <input type="text" id="airway-other-input" name="airwayOther" placeholder="ระบุ..." class="mt-1 hidden w-full">
+                        </fieldset>
+
+                        <fieldset class="p-4 border border-blue-100 rounded-lg bg-blue-50 space-y-2">
+                            <legend class="text-md font-semibold text-blue-700 mb-2">Checklist ความครบถ้วนของอุปกรณ์</legend>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="equipment" value="อุปกรณ์ในการช่วยหายใจ"> อุปกรณ์ในการช่วยหายใจ
+                                </label>
+                            </div>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="equipment" value="Monitor"> Monitor
+                                </label>
+                            </div>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="equipment" value="Emergency bag"> Emergency bag
+                                </label>
+                            </div>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="equipment" value="Infusion pump (ใช้)"> Infusion pump (ใช้)
+                                </label>
+                            </div>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="equipment" value="Infusion pump (ไม่ใช้)"> Infusion pump (ไม่ใช้)
+                                </label>
+                            </div>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="equipment" value="Oxygen tank >500 psi"> Oxygen tank >500 psi
+                                </label>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="p-4 border border-blue-100 rounded-lg bg-blue-50 space-y-2">
+                            <legend class="text-md font-semibold text-blue-700 mb-2">อุปกรณ์และการเตรียมพร้อม</legend>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="preparation" value="ตรวจสอบ IV line สายระบาย และสายสวนปัสสาวะ(ถ้ามี)"> ตรวจสอบ IV line สายระบาย และสายสวนปัสสาวะ(ถ้ามี)
+                                </label>
+                            </div>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="preparation" value="ตรวจสอบท่อช่วยหายใจ (ถ้ามี)"> ตรวจสอบท่อช่วยหายใจ (ถ้ามี)
+                                </label>
+                            </div>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="preparation" value="เตรียมยาฉุกเฉินพร้อมใช้งาน"> เตรียมยาฉุกเฉินพร้อมใช้งาน
+                                </label>
+                            </div>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="preparation" value="ตรวจสอบแบตเตอรี่/อุปกรณ์ติดตาม"> ตรวจสอบแบตเตอรี่/อุปกรณ์ติดตาม
+                                </label>
+                            </div>
+                             <div class="checkbox-row">
+                                <label>
+                                    <input type="checkbox" name="preparation" value="Other" onchange="toggleOtherInput(this, 'preparation-other-input')"> อื่นๆ
+                                </label>
+                            </div>
+                             <input type="text" id="preparation-other-input" name="preparationOther" placeholder="ระบุ..." class="mt-1 hidden w-full">
+                        </fieldset>
+
+                        <fieldset class="p-4 border border-blue-100 rounded-lg bg-blue-50 space-y-2">
+                            <legend class="text-md font-semibold text-blue-700 mb-2">การส่งต่อข้อมูลก่อนย้าย</legend>
+                            <div class="flex gap-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="handover" value="ไม่ปฏิบัติ" class="mr-2" required> ไม่ปฏิบัติ
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="handover" value="ปฏิบัติ" class="mr-2"> ปฏิบัติ
+                                </label>
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <fieldset class="p-4 border border-purple-100 rounded-lg bg-purple-50">
+                         <legend class="text-md font-semibold text-purple-700 mb-3">สัญญาณชีพก่อนย้าย</legend>
+                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                             <div>
+                                 <label for="bp" class="block text-sm font-medium text-gray-700 mb-1">BP:</label>
+                                 <input type="text" id="bp" name="bp" placeholder="e.g., 120/80">
+                             </div>
+                             <div>
+                                 <label for="hr" class="block text-sm font-medium text-gray-700 mb-1">HR:</label>
+                                 <input type="number" id="hr" name="hr" placeholder="e.g., 75">
+                             </div>
+                             <div>
+                                 <label for="o2sat" class="block text-sm font-medium text-gray-700 mb-1">O2sat:</label>
+                                 <input type="number" id="o2sat" name="o2sat" placeholder="e.g., 98">
+                             </div>
+                             <div>
+                                 <label for="rr" class="block text-sm font-medium text-gray-700 mb-1">RR:</label>
+                                 <input type="number" id="rr" name="rr" placeholder="e.g., 16">
+                             </div>
+                             <div class="col-span-2 sm:col-span-3 md:col-span-1">
+                                 <label for="remark-pre" class="block text-sm font-medium text-gray-700 mb-1">Remark:</label>
+                                 <input type="text" id="remark-pre" name="remarkPre" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)">
+                             </div>
+                         </div>
+                    </fieldset>
+
+                    <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                        <label for="recorder" class="block text-sm font-medium text-gray-700 mb-1">ผู้บันทึก:</label>
+                        <input type="text" id="recorder" name="recorder" required>
+                    </div>
+
+                    <div class="text-center pt-4">
+                        <button type="submit" class="btn btn-primary">บันทึกข้อมูลก่อนย้าย</button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="part2" class="section-container hidden">
+                <h2 class="text-xl font-semibold text-indigo-600 mb-4 border-b pb-2">ทะเบียนการเคลื่อนย้าย</h2>
+                <div id="transfer-log" class="space-y-4">
+                    <p class="text-gray-500 text-center">ยังไม่มีข้อมูลการเคลื่อนย้ายที่บันทึกไว้</p>
+                </div>
+            </section>
+
+            <footer class="text-center mt-8 text-sm text-gray-500">
+                Powered by S.Sanguansat
+            </footer>
+        </div>
+
+        <div id="pdf-content" style="position: absolute; left: -9999px; top: auto; width: 210mm; background: white; color: black;">
+            </div>
+
+        <script>
+            // --- Global Variables & Initialization ---
+            const preTransferForm = document.getElementById('pre-transfer-form');
+            const transferLogDiv = document.getElementById('transfer-log');
+            const pdfContentDiv = document.getElementById('pdf-content');
+            let transferData = []; // Array to hold all transfer records
+            let editingRecordId = null; // To track if we are editing an existing record
+
+            // --- Utility Functions ---
+
+            // Function to get form data from the main Pre-Transfer form (Part 1)
+            function getFormData(form) {
+                const formData = new FormData(form);
+                const data = {};
+                // Handle checkboxes
+                const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+                const checkboxData = {};
+                checkboxes.forEach(cb => {
+                    if (!checkboxData[cb.name]) {
+                        checkboxData[cb.name] = [];
+                    }
+                    if (cb.checked) {
+                        checkboxData[cb.name].push(cb.value);
+                    }
+                });
+
+                // Handle radio buttons
+                const radioData = {};
+                form.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    if (radio.checked) {
+                        radioData[radio.name] = radio.value;
+                    }
+                });
+
+                // Combine all data
+                formData.forEach((value, key) => {
+                    // Skip checkbox/radio keys handled separately
+                    if (!checkboxData.hasOwnProperty(key) && !radioData.hasOwnProperty(key)) {
+                        data[key] = value;
+                    }
+                });
+
+                // Add checkbox and radio data
+                Object.assign(data, checkboxData, radioData);
+                return data;
+            }
+
+
+            // Function to save data to local storage
+            function saveData() {
+                localStorage.setItem('transferAnesKPHData', JSON.stringify(transferData));
+            }
+
+            // Function to load data from local storage
+            function loadData() {
+                const storedData = localStorage.getItem('transferAnesKPHData');
+                if (storedData) {
+                    try {
+                        transferData = JSON.parse(storedData);
+                        if (!Array.isArray(transferData)) {
+                            console.warn("Loaded data from localStorage is not an array, resetting to empty.");
+                            transferData = [];
+                        }
+                    } catch (e) {
+                        console.error("Error parsing stored data from localStorage:", e);
+                        transferData = [];
+                    }
+                } else {
+                    transferData = [];
+                }
+                renderTransferLog();
+            }
+
+            // Function to show/hide sections (now only two sections)
+            function showSection(sectionId) {
+                document.getElementById('part1').classList.add('hidden');
+                document.getElementById('part2').classList.add('hidden');
+
+                document.getElementById('nav-part1').classList.remove('active');
+                document.getElementById('nav-part2').classList.remove('active');
+
+                document.getElementById(sectionId).classList.remove('hidden');
+                document.getElementById(`nav-${sectionId}`).classList.add('active');
+
+                 if (sectionId === 'part2') {
+                    renderTransferLog(); // Refresh log when switching to it
+                 }
+            }
+
+            // Function to toggle visibility of 'Other' input fields (takes inputId directly)
+            function toggleOtherInput(checkbox, inputId) {
+                const inputField = document.getElementById(inputId);
+                if (!inputField) {
+                    console.warn("Other input field not found:", inputId);
+                    return;
+                }
+                if (checkbox.checked && checkbox.value === 'Other') {
+                    inputField.classList.remove('hidden');
+                    inputField.required = true;
+                } else {
+                    inputField.classList.add('hidden');
+                    inputField.value = '';
+                    inputField.required = false;
+                }
+            }
+
+            // Function to toggle visibility of complication details (takes recordId)
+            function toggleComplicationDetails(show, recordId) {
+                const detailsDiv = document.getElementById(`complication-details-${recordId}`);
+                const otherInput = document.getElementById(`complication-other-input-${recordId}`);
+                if (!detailsDiv) return;
+
+                if (show) {
+                    detailsDiv.classList.remove('hidden');
+                } else {
+                    detailsDiv.classList.add('hidden');
+                    detailsDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                    if (otherInput) {
+                        otherInput.value = '';
+                        otherInput.classList.add('hidden');
+                        otherInput.required = false;
+                    }
+                }
+            }
+
+            // Function to toggle visibility of dislodgement details (takes recordId)
+            function toggleDislodgementDetails(show, recordId) {
+                const detailsDiv = document.getElementById(`dislodgement-details-${recordId}`);
+                if (!detailsDiv) return;
+
+                if (show) {
+                    detailsDiv.classList.remove('hidden');
+                } else {
+                    detailsDiv.classList.add('hidden');
+                    detailsDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                }
+            }
+
+
+            // Function to format date for display
+            function formatDate(dateString) {
+                if (!dateString) return 'N/A';
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                try {
+                     return new Date(dateString).toLocaleDateString('th-TH', options);
+                } catch (e) {
+                    console.error("Error formatting date:", dateString, e);
+                    return 'Invalid Date';
+                }
+            }
+
+            // Function to format time for display
+            function formatTime(timeString) {
+                 if (!timeString) return 'N/A';
+                 const parts = timeString.split(':');
+                 if (parts.length !== 2) return 'Invalid Time';
+                 const hours = parseInt(parts[0], 10);
+                 const minutes = parseInt(parts[1], 10);
+                 if (isNaN(hours) || isNaN(minutes)) return 'Invalid Time';
+
+                 const date = new Date();
+                 date.setHours(hours, minutes);
+                 const options = { hour: '2-digit', minute: '2-digit', hour12: false };
+                 return date.toLocaleTimeString('th-TH', options);
+            }
+
+            // --- Rendering Functions ---
+            // Function to render the transfer log (Part 2 - Registry)
+            function renderTransferLog() {
+                transferLogDiv.innerHTML = ''; // Clear existing log
+
+                if (transferData.length === 0) {
+                    transferLogDiv.innerHTML = '<p class="text-gray-500 text-center">ยังไม่มีข้อมูลการเคลื่อนย้ายที่บันทึกไว้</p>';
+                    return;
+                }
+
+                const sortedData = [...transferData].sort((a, b) => b.createdAt - a.createdAt);
+
+                sortedData.forEach(record => {
+                    const card = document.createElement('div');
+                    card.className = 'log-card relative';
+                    card.id = `log-card-${record.id}`;
+
+                    // --- Action Buttons ---
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = "absolute top-2 right-2 flex gap-2"; 
+
+                    const editButton = document.createElement('button');
+                    editButton.className = "text-xs text-blue-600 hover:text-blue-800";
+                    editButton.title = "แก้ไข";
+                    editButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`;
+                    editButton.onclick = () => editRecord(record.id);
+                    actionsDiv.appendChild(editButton);
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = "text-xs text-red-600 hover:text-red-800";
+                    deleteButton.title = "ลบ";
+                    deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
+                    deleteButton.onclick = () => deleteRecord(record.id);
+                    actionsDiv.appendChild(deleteButton);
+
+                    const pdfButton = document.createElement('button');
+                    pdfButton.className = "text-xs text-green-600 hover:text-green-800";
+                    pdfButton.title = "Export PDF";
+                    pdfButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`;
+                    pdfButton.onclick = () => generatePDF(record.id);
+                    actionsDiv.appendChild(pdfButton);
+
+                    card.appendChild(actionsDiv);
+
+                    // --- Card Content (Pre-transfer Summary) ---
+                    const contentDiv = document.createElement('div');
+                    contentDiv.innerHTML = `
+                        <h3>${record.patientName || 'N/A'} (HN: ${record.hn || 'N/A'})</h3>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-700">
+                            <p><span class="font-semibold">วันที่ย้าย:</span> ${formatDate(record.transferDate)} ${formatTime(record.transferTime)}</p>
+                            <p><span class="font-semibold">ห้องผ่าตัด:</span> ${record.operatingRoom || 'N/A'}</p>
+                            <p><span class="font-semibold">ปลายทาง:</span> ${record.destination || 'N/A'}</p>
+                            <p><span class="font-semibold">ผู้บันทึก (ก่อนย้าย):</span> ${record.recorder || 'N/A'}</p>
+                            <p><span class="font-semibold">บันทึกเมื่อ:</span> ${new Date(record.createdAt).toLocaleString('th-TH')}</p>
+                            ${record.transporter ? `<p><span class="font-semibold">ผู้นำส่ง:</span> ${record.transporter}</p>` : ''}
+                        </div>
+                    `;
+                    card.appendChild(contentDiv);
+
+                    // --- Arrival Data Section ---
+                    const arrivalDiv = document.createElement('div');
+                    arrivalDiv.className = "mt-3 pt-3 border-t border-dashed border-gray-300";
+                    if (record.arrivalData) {
+                        arrivalDiv.innerHTML = `
+                            <h4>ข้อมูลเมื่อถึงปลายทาง</h4>
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-700">
+                                 <p><span class="font-semibold">เวลาถึง:</span> ${formatTime(record.arrivalData.arrivalTime)}</p>
+                                 <p><span class="font-semibold">BP:</span> ${record.arrivalData.bpArrival || 'N/A'}</p>
+                                 <p><span class="font-semibold">HR:</span> ${record.arrivalData.hrArrival || 'N/A'}</p>
+                                 <p><span class="font-semibold">O2sat:</span> ${record.arrivalData.o2satArrival || 'N/A'}</p>
+                                 <p><span class="font-semibold">RR:</span> ${record.arrivalData.rrArrival || 'N/A'}</p>
+                                 <p class="col-span-2"><span class="font-semibold">Remark:</span> ${record.arrivalData.remarkArrival || 'N/A'}</p>
+                             </div>`;
+                    } else {
+                        // Ensure this form is visible on screen, but can be hidden in PDF if desired
+                        // arrivalDiv.classList.add('pdf-hide-in-output'); // Optionally hide empty form in PDF
+                        arrivalDiv.innerHTML = `
+                            <h4>บันทึกข้อมูลเมื่อถึงปลายทาง</h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 items-end">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">เวลาถึง:</label>
+                                    <input type="time" id="arrival-time-${record.id}" class="text-xs p-1 w-full">
+                                </div>
+                                 <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">BP:</label>
+                                    <input type="text" id="bp-arrival-${record.id}" placeholder="e.g., 120/80" class="text-xs p-1 w-full">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">HR:</label>
+                                    <input type="number" id="hr-arrival-${record.id}" placeholder="e.g., 75" class="text-xs p-1 w-full">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">O2sat:</label>
+                                    <input type="number" id="o2sat-arrival-${record.id}" placeholder="e.g., 98" class="text-xs p-1 w-full">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">RR:</label>
+                                    <input type="number" id="rr-arrival-${record.id}" placeholder="e.g., 16" class="text-xs p-1 w-full">
+                                </div>
+                                <div class="col-span-2 sm:grid-cols-3 md:col-span-4">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Remark:</label>
+                                    <input type="text" id="remark-arrival-${record.id}" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)" class="text-xs p-1 w-full">
+                                </div>
+                                <div class="col-span-2 sm:grid-cols-3 md:col-span-1">
+                                    <button class="btn btn-secondary w-full text-xs py-1 px-2 mt-2" onclick="saveArrivalData('${record.id}')">บันทึก</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    card.appendChild(arrivalDiv);
+
+                    // --- Post-Transfer Data Section ---
+                    const postTransferDiv = document.createElement('div');
+                    postTransferDiv.className = "mt-3 pt-3 border-t border-dashed border-gray-300"; 
+                    
+                    const postTransferFormElement = document.createElement('form');
+                    postTransferFormElement.id = `post-transfer-form-${record.id}`;
+                    postTransferFormElement.className = "space-y-4"; 
+                    postTransferFormElement.onsubmit = (e) => { 
+                        e.preventDefault();
+                        savePostTransferDataInLog(record.id);
+                    };
+
+                    if (record.postTransferData) {
+                        const post = record.postTransferData;
+                        postTransferDiv.innerHTML = `
+                            <h4>ข้อมูลหลังเคลื่อนย้าย</h4>
+                            <div class="text-sm text-gray-700 space-y-1">
+                                <p><span class="font-semibold">อาการไม่พึงประสงค์:</span> ${post.complications || 'N/A'}</p>
+                                ${post.complications === 'พบ' ? `<ul>${(post.complicationDetails && post.complicationDetails.length > 0) ? post.complicationDetails.map(item => `<li>${item === 'Other' ? `อื่นๆ: ${post.complicationOther || 'N/A'}` : item}</li>`).join('') : '<li>ไม่ได้ระบุ</li>'}</ul>` : ''}
+                                <p><span class="font-semibold">ภาวะขาดออกซิเจน:</span> ${post.hypoxia || 'N/A'}</p>
+                                <p><span class="font-semibold">อุปกรณ์เลื่อนหลุด:</span> ${post.dislodgement || 'N/A'}</p>
+                                ${post.dislodgement === 'มี' ? `<ul>${(post.dislodgementDetails && post.dislodgementDetails.length > 0) ? post.dislodgementDetails.map(item => `<li>${item}</li>`).join('') : '<li>ไม่ได้ระบุ</li>'}</ul>` : ''}
+                                <p><span class="font-semibold">ผู้นำส่ง:</span> ${post.transporter || 'N/A'}</p>
+                            </div>`;
+                    } else {
+                        // Ensure this form is visible on screen. Optionally hide in PDF via class on postTransferFormElement
+                        // postTransferFormElement.classList.add('pdf-hide-in-output'); 
+                        postTransferFormElement.innerHTML = `
+                             <h4>บันทึกข้อมูลหลังเคลื่อนย้าย</h4>
+                             <fieldset class="p-3 border border-red-100 rounded-lg bg-red-50/50 space-y-2 text-sm">
+                                 <legend class="text-sm font-semibold text-red-700 mb-1">อาการไม่พึงประสงค์</legend>
+                                 <div class="flex gap-4 mb-1">
+                                     <label class="flex items-center">
+                                         <input type="radio" name="complications-${record.id}" value="ไม่พบ" class="mr-1" required onchange="toggleComplicationDetails(false, '${record.id}')"> ไม่พบ
+                                     </label>
+                                     <label class="flex items-center">
+                                         <input type="radio" name="complications-${record.id}" value="พบ" class="mr-1" onchange="toggleComplicationDetails(true, '${record.id}')"> พบ
+                                     </label>
+                                 </div>
+                                 <div id="complication-details-${record.id}" class="hidden space-y-1 pl-4">
+                                     <p class="text-xs text-gray-600">ระบุ (เลือกได้หลายข้อ):</p>
+                                     <div class="checkbox-row text-xs"><label><input type="checkbox" name="complicationType-${record.id}" value="Hypertension"> Hypertension</label></div>
+                                     <div class="checkbox-row text-xs"><label><input type="checkbox" name="complicationType-${record.id}" value="Hypotension"> Hypotension</label></div>
+                                     <div class="checkbox-row text-xs"><label><input type="checkbox" name="complicationType-${record.id}" value="Bradycardia"> Bradycardia</label></div>
+                                     <div class="checkbox-row text-xs"><label><input type="checkbox" name="complicationType-${record.id}" value="Tachycardia"> Tachycardia</label></div>
+                                     <div class="checkbox-row text-xs"><label><input type="checkbox" name="complicationType-${record.id}" value="Cardiac arrest"> Cardiac arrest</label></div>
+                                     <div class="checkbox-row text-xs">
+                                         <label>
+                                             <input type="checkbox" name="complicationType-${record.id}" value="Other" onchange="toggleOtherInput(this, 'complication-other-input-${record.id}')"> อื่นๆ
+                                         </label>
+                                     </div>
+                                     <input type="text" id="complication-other-input-${record.id}" name="complicationOther-${record.id}" placeholder="ระบุ..." class="mt-1 hidden w-full text-xs p-1">
+                                 </div>
+                             </fieldset>
+
+                             <fieldset class="p-3 border border-blue-100 rounded-lg bg-blue-50/50 space-y-1 text-sm">
+                                 <legend class="text-sm font-semibold text-blue-700 mb-1">ภาวะขาดออกซิเจน</legend>
+                                 <div class="flex gap-4">
+                                     <label class="flex items-center">
+                                         <input type="radio" name="hypoxia-${record.id}" value="ไม่มี" class="mr-1" required> ไม่มี
+                                     </label>
+                                     <label class="flex items-center">
+                                         <input type="radio" name="hypoxia-${record.id}" value="มี" class="mr-1"> มี
+                                     </label>
+                                 </div>
+                             </fieldset>
+
+                             <fieldset class="p-3 border border-yellow-100 rounded-lg bg-yellow-50/50 space-y-2 text-sm">
+                                 <legend class="text-sm font-semibold text-yellow-700 mb-1">อุปกรณ์เลื่อนหลุด</legend>
+                                  <div class="flex gap-4 mb-1">
+                                     <label class="flex items-center">
+                                         <input type="radio" name="dislodgement-${record.id}" value="ไม่มี" class="mr-1" required onchange="toggleDislodgementDetails(false, '${record.id}')"> ไม่มี
+                                     </label>
+                                     <label class="flex items-center">
+                                         <input type="radio" name="dislodgement-${record.id}" value="มี" class="mr-1" onchange="toggleDislodgementDetails(true, '${record.id}')"> มี
+                                     </label>
+                                 </div>
+                                 <div id="dislodgement-details-${record.id}" class="hidden space-y-1 pl-4">
+                                      <p class="text-xs text-gray-600">ระบุ (เลือกได้หลายข้อ):</p>
+                                      <div class="checkbox-row text-xs"><label><input type="checkbox" name="dislodgementType-${record.id}" value="ท่อช่วยหายใจ"> ท่อช่วยหายใจ</label></div>
+                                      <div class="checkbox-row text-xs"><label><input type="checkbox" name="dislodgementType-${record.id}" value="A-line"> A-line</label></div>
+                                      <div class="checkbox-row text-xs"><label><input type="checkbox" name="dislodgementType-${record.id}" value="C-line"> C-line</label></div>
+                                      <div class="checkbox-row text-xs"><label><input type="checkbox" name="dislodgementType-${record.id}" value="เลือดหรือส่วนประกอบของเลือด"> เลือด/ส่วนประกอบเลือด</label></div>
+                                      <div class="checkbox-row text-xs"><label><input type="checkbox" name="dislodgementType-${record.id}" value="สารน้ำ"> สารน้ำ</label></div>
+                                      <div class="checkbox-row text-xs"><label><input type="checkbox" name="dislodgementType-${record.id}" value="สายระบาย"> สายระบาย</label></div>
+                                      <div class="checkbox-row text-xs"><label><input type="checkbox" name="dislodgementType-${record.id}" value="สายสวนปัสสาวะ"> สายสวนปัสสาวะ</label></div>
+                                 </div>
+                             </fieldset>
+
+                             <div class="text-sm">
+                                <label for="transporter-${record.id}" class="block text-xs font-medium text-gray-700 mb-1">ผู้นำส่ง:</label>
+                                <input type="text" id="transporter-${record.id}" name="transporter-${record.id}" required class="text-xs p-1 w-full">
+                             </div>
+
+                             <div class="text-center pt-2">
+                                 <button type="submit" class="btn btn-primary w-full text-xs py-1 px-2">บันทึกข้อมูลหลังย้าย</button>
+                             </div>
+                        `;
+                        postTransferDiv.appendChild(postTransferFormElement); 
+                    }
+                    card.appendChild(postTransferDiv); 
+
+
+                    transferLogDiv.appendChild(card);
+                });
+            }
+
+
+            // --- Event Handlers ---
+            preTransferForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const mainFormData = getFormData(preTransferForm); 
+
+                if (editingRecordId) {
+                    const index = transferData.findIndex(rec => rec.id === editingRecordId);
+                    if (index !== -1) {
+                        const existingPostData = transferData[index].postTransferData;
+                        const existingArrivalData = transferData[index].arrivalData;
+                        transferData[index] = {
+                            ...transferData[index],
+                            ...mainFormData, 
+                            updatedAt: Date.now(),
+                            postTransferData: existingPostData,
+                            arrivalData: existingArrivalData
+                        };
+                        alert('แก้ไขข้อมูลสำเร็จ!');
+                    }
+                    editingRecordId = null;
+                } else {
+                    mainFormData.id = `record-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                    mainFormData.createdAt = Date.now();
+                    mainFormData.postTransferData = null;
+                    mainFormData.arrivalData = null;
+                    transferData.push(mainFormData);
+                    alert('บันทึกข้อมูลสำเร็จ!');
+                }
+
+                saveData();
+                preTransferForm.reset();
+                document.getElementById('airway-other-input').classList.add('hidden');
+                document.getElementById('preparation-other-input').classList.add('hidden');
+                renderTransferLog();
+                showSection('part2'); 
+            });
+
+
+            // --- Record Actions (Edit, Delete, Save Arrival, Save Post-Transfer in Log) ---
+            window.editRecord = function(id) {
+                const record = transferData.find(rec => rec.id === id);
+                if (!record) return;
+
+                editingRecordId = id;
+                preTransferForm.reset();
+
+                for (const key in record) {
+                    if (key === 'postTransferData' || key === 'arrivalData') continue;
+
+                    const element = preTransferForm.elements[key];
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            if (Array.isArray(record[key])) {
+                                 const checkboxes = preTransferForm.querySelectorAll(`input[type="checkbox"][name="${key}"]`);
+                                 checkboxes.forEach(cb => {
+                                     cb.checked = record[key].includes(cb.value);
+                                     const otherInputId = key === 'airway' ? 'airway-other-input' : (key === 'preparation' ? 'preparation-other-input' : null);
+                                     if (cb.value === 'Other' && otherInputId) {
+                                         const otherInput = document.getElementById(otherInputId);
+                                         if (otherInput) {
+                                             if (cb.checked) {
+                                                 otherInput.classList.remove('hidden');
+                                                 otherInput.value = record[key + 'Other'] || '';
+                                                 otherInput.required = true;
+                                             } else {
+                                                 otherInput.classList.add('hidden');
+                                                  otherInput.value = '';
+                                                  otherInput.required = false;
+                                             }
+                                         }
+                                     }
+                                 });
+                            }
+                        } else if (element.type === 'radio') {
+                            const radio = preTransferForm.querySelector(`input[type="radio"][name="${key}"][value="${record[key]}"]`);
+                            if (radio) radio.checked = true;
+                        } else if (element.tagName === 'SELECT') {
+                            element.value = record[key];
+                        } else {
+                            element.value = record[key] || '';
+                        }
+                    } else {
+                         if (key === 'airwayOther' && record.airway?.includes('Other')) {
+                             const otherInput = document.getElementById('airway-other-input'); 
+                             if (otherInput) otherInput.value = record[key] || '';
+                         } else if (key === 'preparationOther' && record.preparation?.includes('Other')) {
+                             const otherInput = document.getElementById('preparation-other-input'); 
+                             if (otherInput) otherInput.value = record[key] || '';
+                         }
+                    }
+                }
+                showSection('part1');
+            }
+
+            window.deleteRecord = function(id) {
+                const recordIndex = transferData.findIndex(rec => rec.id === id);
+                 if (recordIndex === -1) {
+                    console.error("Record not found for deletion:", id);
+                    return;
+                }
+                const recordToDelete = transferData[recordIndex];
+                const patientInfo = recordToDelete ? `${recordToDelete.patientName} (HN: ${recordToDelete.hn})` : 'รายการนี้';
+
+                if (confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลของ ${patientInfo}? การกระทำนี้ไม่สามารถย้อนกลับได้`)) {
+                    transferData.splice(recordIndex, 1);
+                    saveData();
+                    renderTransferLog();
+                    alert('ลบรายการสำเร็จ');
+                }
+            }
+
+
+            window.saveArrivalData = function(id) {
+                 const recordIndex = transferData.findIndex(rec => rec.id === id);
+                 if (recordIndex === -1) {
+                     alert('ไม่พบข้อมูลรายการเคลื่อนย้าย');
+                     return;
+                 }
+
+                 const arrivalTime = document.getElementById(`arrival-time-${id}`)?.value;
+                 const bpArrival = document.getElementById(`bp-arrival-${id}`)?.value;
+                 const hrArrival = document.getElementById(`hr-arrival-${id}`)?.value;
+                 const o2satArrival = document.getElementById(`o2sat-arrival-${id}`)?.value;
+                 const rrArrival = document.getElementById(`rr-arrival-${id}`)?.value;
+                 const remarkArrival = document.getElementById(`remark-arrival-${id}`)?.value;
+
+                 if (!arrivalTime) {
+                     alert('กรุณากรอกเวลาที่ถึงปลายทาง');
+                     return;
+                 }
+
+                 transferData[recordIndex].arrivalData = {
+                     arrivalTime,
+                     bpArrival,
+                     hrArrival,
+                     o2satArrival,
+                     rrArrival,
+                     remarkArrival,
+                     savedAt: Date.now()
+                 };
+
+                 saveData();
+                 alert('บันทึกข้อมูลเมื่อถึงปลายทางสำเร็จ!');
+                 renderTransferLog();
+            }
+
+            window.savePostTransferDataInLog = function(recordId) {
+                const recordIndex = transferData.findIndex(rec => rec.id === recordId);
+                if (recordIndex === -1) {
+                    alert('ไม่พบข้อมูลรายการเคลื่อนย้าย');
+                    return;
+                }
+
+                const formElement = document.getElementById(`post-transfer-form-${recordId}`);
+                if (!formElement) {
+                     alert('ไม่พบฟอร์มข้อมูลหลังย้าย');
+                     return;
+                }
+
+                 const data = {};
+                 const formData = new FormData(formElement);
+
+                 formElement.querySelectorAll('input[type="radio"]').forEach(radio => {
+                     if (radio.checked) {
+                         const name = radio.name.replace(`-${recordId}`, '');
+                         data[name] = radio.value;
+                     }
+                 });
+
+                 formElement.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                     const name = cb.name.replace(`-${recordId}`, '');
+                     if (!data[name]) {
+                         data[name] = [];
+                     }
+                     if (cb.checked) {
+                         data[name].push(cb.value);
+                     }
+                 });
+
+                 formData.forEach((value, key) => {
+                     const name = key.replace(`-${recordId}`, '');
+                     if (!data.hasOwnProperty(name) || name.endsWith('Other') || name === 'transporter') {
+                          data[name] = value;
+                     }
+                 });
+
+                 const postData = {
+                     complications: data.complications,
+                     complicationDetails: data.complications === 'พบ' ? (data.complicationType || []) : [],
+                     complicationOther: data.complications === 'พบ' && data.complicationType?.includes('Other') ? data.complicationOther : '',
+                     hypoxia: data.hypoxia,
+                     dislodgement: data.dislodgement,
+                     dislodgementDetails: data.dislodgement === 'มี' ? (data.dislodgementType || []) : [],
+                     transporter: data.transporter,
+                     savedAt: Date.now()
+                 };
+
+                 if (!postData.complications || !postData.hypoxia || !postData.dislodgement || !postData.transporter) {
+                     alert('กรุณากรอกข้อมูลหลังย้ายให้ครบถ้วน');
+                     return;
+                 }
+
+                 transferData[recordIndex].postTransferData = postData;
+                 transferData[recordIndex].transporter = data.transporter; 
+
+                 saveData();
+                 alert('บันทึกข้อมูลหลังเคลื่อนย้ายสำเร็จ!');
+                 renderTransferLog();
+            }
+
+
+            window.generatePDF = async function(id) {
+                const record = transferData.find(rec => rec.id === id);
+                if (!record) {
+                    alert('ไม่พบข้อมูลสำหรับสร้าง PDF');
+                    return;
+                }
+
+                let pdfHtml = `
+                    <div class="pdf-container">
+                        <h1>Transfer Anes KPH - Checklist Report</h1>
+                        <p><strong>วันที่สร้างรายงาน:</strong> ${new Date().toLocaleString('th-TH')}</p>
+
+                        <div class="section">
+                            <h2>ข้อมูลผู้ป่วยและการเคลื่อนย้าย</h2>
+                            <div class="grid">
+                                <div><span class="label">HN:</span><span class="value">${record.hn || 'N/A'}</span></div>
+                                <div><span class="label">ชื่อผู้ป่วย:</span><span class="value">${record.patientName || 'N/A'}</span></div>
+                                <div><span class="label">ห้องผ่าตัด:</span><span class="value">${record.operatingRoom || 'N/A'}</span></div>
+                                <div><span class="label">ย้ายไป:</span><span class="value">${record.destination || 'N/A'}</span></div>
+                                <div><span class="label">วันที่ย้าย:</span><span class="value">${formatDate(record.transferDate)}</span></div>
+                                <div><span class="label">เวลาย้าย:</span><span class="value">${formatTime(record.transferTime)}</span></div>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <h2>ข้อมูลเตรียมก่อนเคลื่อนย้าย</h2>
+                            <div class="grid">
+                                <div>
+                                    <strong>Airway/Oxygen:</strong>
+                                    <ul>${(record.airway && record.airway.length > 0) ? record.airway.map(item => `<li>${item === 'Other' ? `อื่นๆ: ${record.airwayOther || 'N/A'}` : item}</li>`).join('') : '<li>N/A</li>'}</ul>
+                                </div>
+                                <div>
+                                    <strong>ความครบถ้วนอุปกรณ์:</strong>
+                                    <ul>${(record.equipment && record.equipment.length > 0) ? record.equipment.map(item => `<li>${item}</li>`).join('') : '<li>N/A</li>'}</ul>
+                                </div>
+                                <div>
+                                    <strong>การเตรียมพร้อม:</strong>
+                                    <ul>${(record.preparation && record.preparation.length > 0) ? record.preparation.map(item => `<li>${item === 'Other' ? `อื่นๆ: ${record.preparationOther || 'N/A'}` : item}</li>`).join('') : '<li>N/A</li>'}</ul>
+                                </div>
+                                <div>
+                                    <strong>การส่งต่อข้อมูล:</strong>
+                                    <p>${record.handover || 'N/A'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                         <div class="section">
+                            <h2>สัญญาณชีพก่อนย้าย</h2>
+                            <div class="grid">
+                                <div><span class="label">BP:</span><span class="value">${record.bp || 'N/A'}</span></div>
+                                <div><span class="label">HR:</span><span class="value">${record.hr || 'N/A'}</span></div>
+                                <div><span class="label">O2sat:</span><span class="value">${record.o2sat || 'N/A'}</span></div>
+                                <div><span class="label">RR:</span><span class="value">${record.rr || 'N/A'}</span></div>
+                                <div style="grid-column: span 2;"><span class="label">Remark:</span><span class="value">${record.remarkPre || 'N/A'}</span></div>
+                                <div><span class="label">ผู้บันทึก:</span><span class="value">${record.recorder || 'N/A'}</span></div>
+                            </div>
+                        </div>`;
+
+                 if (record.arrivalData) {
+                     pdfHtml += `
+                         <div class="section">
+                             <h2>สัญญาณชีพเมื่อถึงปลายทาง</h2>
+                             <div class="grid">
+                                 <div><span class="label">เวลาถึง:</span><span class="value">${formatTime(record.arrivalData.arrivalTime)}</span></div>
+                                 <div><span class="label">BP:</span><span class="value">${record.arrivalData.bpArrival || 'N/A'}</span></div>
+                                 <div><span class="label">HR:</span><span class="value">${record.arrivalData.hrArrival || 'N/A'}</span></div>
+                                 <div><span class="label">O2sat:</span><span class="value">${record.arrivalData.o2satArrival || 'N/A'}</span></div>
+                                 <div><span class="label">RR:</span><span class="value">${record.arrivalData.rrArrival || 'N/A'}</span></div>
+                                 <div style="grid-column: span 2;"><span class="label">Remark:</span><span class="value">${record.arrivalData.remarkArrival || 'N/A'}</span></div>
+                             </div>
+                         </div>`;
+                 } else {
+                     pdfHtml += `<div class="section"><p>ยังไม่มีการบันทึกข้อมูลเมื่อถึงปลายทาง</p></div>`;
+                 }
+
+                 if (record.postTransferData) {
+                     const post = record.postTransferData;
+                     pdfHtml += `
+                         <div class="section">
+                             <h2>ข้อมูลหลังเคลื่อนย้าย</h2>
+                             <div><strong>อาการไม่พึงประสงค์:</strong> ${post.complications || 'N/A'}</div>`;
+                     if (post.complications === 'พบ') {
+                         pdfHtml += `<ul>${(post.complicationDetails && post.complicationDetails.length > 0) ? post.complicationDetails.map(item => `<li>${item === 'Other' ? `อื่นๆ: ${post.complicationOther || 'N/A'}` : item}</li>`).join('') : '<li>ไม่ได้ระบุ</li>'}</ul>`;
+                     }
+                     pdfHtml += `
+                             <div><strong>ภาวะขาดออกซิเจน:</strong> ${post.hypoxia || 'N/A'}</div>
+                             <div><strong>อุปกรณ์เลื่อนหลุด:</strong> ${post.dislodgement || 'N/A'}</div>`;
+                     if (post.dislodgement === 'มี') {
+                          pdfHtml += `<ul>${(post.dislodgementDetails && post.dislodgementDetails.length > 0) ? post.dislodgementDetails.map(item => `<li>${item}</li>`).join('') : '<li>ไม่ได้ระบุ</li>'}</ul>`;
+                     }
+                     pdfHtml += `<div><strong>ผู้นำส่ง:</strong> ${post.transporter || 'N/A'}</div>
+                         </div>`;
+                 } else {
+                     pdfHtml += `<div class="section"><p>ยังไม่มีการบันทึกข้อมูลหลังเคลื่อนย้าย</p></div>`;
+                 }
+
+                pdfHtml += `</div>`; 
+
+                pdfContentDiv.innerHTML = pdfHtml;
+
+                const { jsPDF } = window.jspdf;
+                try {
+                    const canvas = await html2canvas(pdfContentDiv, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false
+                    });
+
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF({
+                        orientation: 'p',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = canvas.width;
+                    const imgHeight = canvas.height;
+                    const ratio = Math.min((pdfWidth - 20) / imgWidth, (pdfHeight - 20) / imgHeight);
+                    const imgX = 10;
+                    const imgY = 10;
+                    const effectiveImgHeight = imgHeight * ratio;
+
+                    pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, effectiveImgHeight);
+
+                    const fileName = `Transfer_Report_${record.hn || 'NoHN'}_${record.patientName || 'NoName'}.pdf`;
+                    pdf.save(fileName);
+
+                } catch (error) {
+                    console.error("Error generating PDF:", error);
+                    alert("เกิดข้อผิดพลาดในการสร้างไฟล์ PDF");
+                } finally {
+                     pdfContentDiv.innerHTML = '';
+                }
+            };
+
+
+            // --- Initial Load ---
+            document.addEventListener('DOMContentLoaded', () => {
+                loadData();
+                showSection('part1'); 
+            });
+
+        </script>
+
+    </body>
+    </html>
