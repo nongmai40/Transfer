@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Anes KPH Transfer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Sarabun', 'Inter', sans-serif;
+            background-color: #f3f4f6; 
+            color: #374151; 
+        }
+        nav {
+            margin-bottom: 1.5rem; 
+        }
+        .nav-button {
+            padding: 0.625rem 1.25rem; 
+            border-radius: 9999px; 
+            font-weight: 600; 
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 0.5rem; 
+            border: 1px solid transparent; 
+            font-size: 0.875rem; 
+            line-height: 1.25rem; 
+        }
+        .nav-button:last-child {
+            margin-right: 0;
+        }
+        .nav-button.active {
+            background-color: #4f46e5; 
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -2px rgba(79, 70, 229, 0.12);
+        }
+        .nav-button:not(.active) {
+            background-color: #e0e7ff; 
+            color: #4338ca; 
+            border-color: #c7d2fe; 
+        }
+        .nav-button:not(.active):hover {
+            background-color: #c7d2fe; 
+            border-color: #a5b4fc; 
+        }
+        .section-container {
+            background-color: white;
+            padding: 1.5rem; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); 
+            border: 1px solid #e5e7eb; 
+        }
+        .log-card {
+            background-color: #f9fafb; 
+            border: 1px solid #e5e7eb; 
+            border-radius: 0.75rem; 
+            padding: 1.25rem; 
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+        }
+        .log-card h3 {
+            color: #4338ca; 
+            font-weight: 700; 
+            font-size: 1.125rem; 
+        }
+         .log-card h4 {
+             color: #4f46e5; 
+             font-weight: 600; 
+             margin-bottom: 0.5rem;
+             margin-top: 1.25rem; 
+             padding-top: 1rem; 
+             border-top: 1px dashed #d1d5db; 
+        }
+        input[type="text"], input[type="date"], input[type="time"], input[type="number"], select, textarea {
+            border: 1px solid #d1d5db; 
+            padding: 0.625rem 0.875rem; 
+            border-radius: 0.5rem; 
+            width: 100%;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            font-size: 0.875rem; 
+        }
+        input[type="text"]:focus, input[type="date"]:focus, input[type="time"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4f46e5; 
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3); 
+        }
+        .btn {
+            padding: 0.625rem 1.25rem; 
+            border-radius: 0.5rem; 
+            font-weight: 600; 
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem; 
+            font-size: 0.875rem; 
+        }
+        .btn-primary {
+            background-color: #4f46e5; 
+            color: white;
+            border: 1px solid transparent;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca; 
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+        .btn-secondary {
+            background-color: #e0e7ff; 
+            color: #4338ca; 
+            border: 1px solid #c7d2fe; 
+        }
+        .btn-secondary:hover {
+            background-color: #c7d2fe; 
+            border-color: #a5b4fc; 
+        }
+        .checkbox-row label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.625rem; 
+            border-radius: 0.5rem; 
+            transition: background-color 0.2s ease-in-out;
+            width: 100%;
+        }
+        .checkbox-row label:hover {
+            background-color: #eef2ff; 
+        }
+        .checkbox-row input[type="checkbox"] {
+            height: 1.375rem; 
+            width: 1.375rem;  
+            margin-right: 0.875rem; 
+            cursor: pointer;
+            color: #4f46e5; 
+            border-color: #9ca3af; 
+            border-radius: 0.375rem; 
+        }
+        .checkbox-row input[type="checkbox"]:focus {
+            ring: 2px;
+            ring-offset: 2px;
+            ring-indigo-500;
+        }
+        .checkbox-row .checkbox-text {
+            font-size: 0.875rem; 
+            color: #374151; 
+        }
+        .pdf-container {
+            font-family: sans-serif; 
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: white;
+            color: black;
+            width: 210mm; 
+            box-sizing: border-box;
+        }
+        .pdf-container h1, .pdf-container h2 {
+            color: #4f46e5;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .pdf-container h1 { font-size: 18pt; }
+        .pdf-container h2 { font-size: 14pt; }
+        .pdf-container p, .pdf-container li { font-size: 10pt; margin-bottom: 5px; }
+        .pdf-container .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .pdf-container .grid > div { break-inside: avoid; } 
+        .pdf-container ul { list-style: disc; padding-left: 20px; margin-top: 5px; margin-bottom: 10px;}
+        .pdf-container .section { margin-bottom: 15px; border: 1px solid #eee; padding: 10px; border-radius: 5px; }
+        .pdf-container .label { font-weight: bold; display: inline-block; min-width: 120px; }
+        .pdf-container .value { display: inline-block; }
+        .pdf-hide-in-output { display: none !important; }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+</head>
+<body class="p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <header class="text-center mb-8 bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-xl shadow-xl">
+            <h1 class="text-3xl sm:text-4xl font-bold">⚕️ Transfer Anes KPH ⚕️</h1>
+            <p class="text-indigo-200 mt-1 text-sm sm:text-base">ระบบ Checklist สำหรับการเคลื่อนย้ายผู้ป่วย</p>
+        </header>
+
+        <nav class="mb-6 flex justify-center sm:justify-start">
+            <button id="nav-part1" class="nav-button active" onclick="showSection('part1')">📝 1. เตรียมก่อนย้าย</button>
+            <button id="nav-part2" class="nav-button" onclick="showSection('part2')">🗂️ 2. ทะเบียน</button>
+        </nav>
+
+        <section id="part1" class="section-container">
+            <h2 class="text-xl sm:text-2xl font-semibold text-indigo-700 mb-6 border-b border-indigo-200 pb-3">📋 ข้อมูลเตรียมก่อนเคลื่อนย้าย</h2>
+            <form id="pre-transfer-form" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 p-4 border border-indigo-100 rounded-lg bg-indigo-50">
+                    <div>
+                        <label for="hn" class="block text-sm font-medium text-gray-700 mb-1">HN:</label>
+                        <input type="text" id="hn" name="hn" required>
+                    </div>
+                    <div>
+                        <label for="patient-name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ป่วย:</label>
+                        <input type="text" id="patient-name" name="patientName" required>
+                    </div>
+                    <div>
+                        <label for="operating-room" class="block text-sm font-medium text-gray-700 mb-1">ห้องผ่าตัด:</label>
+                        <select id="operating-room" name="operatingRoom" required onchange="toggleSelectOtherInput(this, 'operating-room-other-input')">
+                            <option value="" disabled selected>-- เลือกห้องผ่าตัด --</option>
+                            <option value="ห้อง 1">ห้อง 1</option>
+                            <option value="ห้อง 2">ห้อง 2</option>
+                            <option value="ห้อง 3">ห้อง 3</option>
+                            <option value="ห้อง 4">ห้อง 4</option>
+                            <option value="ห้อง 5">ห้อง 5</option>
+                            <option value="ห้อง 6">ห้อง 6</option>
+                            <option value="ห้อง 7">ห้อง 7</option>
+                            <option value="ห้อง 8">ห้อง 8</option>
+                            <option value="ห้อง 9">ห้อง 9</option>
+                            <option value="ห้อง 10">ห้อง 10</option>
+                            <option value="ห้อง 11">ห้อง 11</option>
+                            <option value="อื่นๆ">อื่นๆ (โปรดระบุ)</option>
+                        </select>
+                        <input type="text" id="operating-room-other-input" name="operatingRoomOther" placeholder="ระบุห้องผ่าตัด..." class="mt-2 hidden w-full text-sm">
+                    </div>
+                    <div>
+                        <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">ย้ายไป:</label>
+                        <select id="destination" name="destination" required onchange="toggleSelectOtherInput(this, 'destination-other-input')">
+                            <option value="" disabled selected>-- เลือกปลายทาง --</option>
+                            <option value="ICU รวม">ICU รวม</option>
+                            <option value="ICU med1">ICU med1</option>
+                            <option value="ICU med2">ICU med2</option>
+                            <option value="ICU med3">ICU med3</option>
+                            <option value="ศัลยกรรมทั่วไป">ศัลยกรรมทั่วไป</option>
+                            <option value="ศัลยกรรมหญิง">ศัลยกรรมหญิง</option>
+                            <option value="ศัลยกรรมอุบัติเหตุ">ศัลยกรรมอุบัติเหตุ</option>
+                            <option value="ศัลยกรรมกระดูก">ศัลยกรรมกระดูก</option>
+                            <option value="สงฆ์ หู คอ จมูก">สงฆ์ หู คอ จมูก</option>
+                            <option value="กุมารเวชกรรม">กุมารเวชกรรม</option>
+                            <option value="สูติ นรีเวช">สูติ นรีเวช</option>
+                            <option value="อื่นๆ">อื่นๆ (โปรดระบุ)</option>
+                        </select>
+                         <input type="text" id="destination-other-input" name="destinationOther" placeholder="ระบุปลายทาง..." class="mt-2 hidden w-full text-sm">
+                    </div>
+                     <div>
+                        <label for="transfer-date" class="block text-sm font-medium text-gray-700 mb-1">วันที่:</label>
+                        <input type="date" id="transfer-date" name="transferDate" required>
+                    </div>
+                    <div>
+                        <label for="transfer-time" class="block text-sm font-medium text-gray-700 mb-1">เวลาย้าย:</label>
+                        <input type="time" id="transfer-time" name="transferTime" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <fieldset class="p-4 border border-blue-200 rounded-lg bg-blue-50 space-y-1">
+                        <legend class="text-md font-semibold text-blue-700 mb-2">💨 Airway oxygen transfer</legend>
+                        <div class="checkbox-row"><label><input type="checkbox" name="airway" value="Endotracheal tube"><span class="checkbox-text">Endotracheal tube</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="airway" value="Tracheostomy tube"><span class="checkbox-text">Tracheostomy tube</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="airway" value="Mask with bag"><span class="checkbox-text">Mask with bag</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="airway" value="Nasal Canula"><span class="checkbox-text">Nasal Canula</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="airway" value="Other" onchange="toggleOtherInput(this, 'airway-other-input')"><span class="checkbox-text">อื่นๆ</span></label></div>
+                        <input type="text" id="airway-other-input" name="airwayOther" placeholder="ระบุ..." class="mt-1 hidden w-full text-sm">
+                    </fieldset>
+
+                    <fieldset class="p-4 border border-blue-200 rounded-lg bg-blue-50 space-y-1">
+                        <legend class="text-md font-semibold text-blue-700 mb-2">🛠️ Checklist ความครบถ้วนของอุปกรณ์</legend>
+                        <div class="checkbox-row"><label><input type="checkbox" name="equipment" value="อุปกรณ์ในการช่วยหายใจ"><span class="checkbox-text">อุปกรณ์ในการช่วยหายใจ</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="equipment" value="Monitor"><span class="checkbox-text">Monitor</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="equipment" value="Emergency bag"><span class="checkbox-text">Emergency bag</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="equipment" value="Infusion pump (ใช้)"><span class="checkbox-text">Infusion pump (ใช้)</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="equipment" value="Infusion pump (ไม่ใช้)"><span class="checkbox-text">Infusion pump (ไม่ใช้)</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="equipment" value="Oxygen tank >500 psi"><span class="checkbox-text">Oxygen tank >500 psi</span></label></div>
+                    </fieldset>
+
+                    <fieldset class="p-4 border border-blue-200 rounded-lg bg-blue-50 space-y-1">
+                        <legend class="text-md font-semibold text-blue-700 mb-2">🔧 อุปกรณ์และการเตรียมพร้อม</legend>
+                        <div class="checkbox-row"><label><input type="checkbox" name="preparation" value="ตรวจสอบ IV line สายระบาย และสายสวนปัสสาวะ(ถ้ามี)"><span class="checkbox-text">ตรวจสอบ IV line สายระบาย และสายสวนปัสสาวะ(ถ้ามี)</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="preparation" value="ตรวจสอบท่อช่วยหายใจ (ถ้ามี)"><span class="checkbox-text">ตรวจสอบท่อช่วยหายใจ (ถ้ามี)</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="preparation" value="เตรียมยาฉุกเฉินพร้อมใช้งาน"><span class="checkbox-text">เตรียมยาฉุกเฉินพร้อมใช้งาน</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="preparation" value="ตรวจสอบแบตเตอรี่/อุปกรณ์ติดตาม"><span class="checkbox-text">ตรวจสอบแบตเตอรี่/อุปกรณ์ติดตาม</span></label></div>
+                        <div class="checkbox-row"><label><input type="checkbox" name="preparation" value="Other" onchange="toggleOtherInput(this, 'preparation-other-input')"><span class="checkbox-text">อื่นๆ</span></label></div>
+                        <input type="text" id="preparation-other-input" name="preparationOther" placeholder="ระบุ..." class="mt-1 hidden w-full text-sm">
+                    </fieldset>
+
+                    <fieldset class="p-4 border border-blue-200 rounded-lg bg-blue-50 space-y-2">
+                        <legend class="text-md font-semibold text-blue-700 mb-2">🗣️ การส่งต่อข้อมูลก่อนย้าย</legend>
+                        <div class="flex gap-4">
+                            <label class="flex items-center p-2 rounded-md hover:bg-indigo-100"><input type="radio" name="handover" value="ไม่ปฏิบัติ" class="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500" required> <span class="text-sm">ไม่ปฏิบัติ</span></label>
+                            <label class="flex items-center p-2 rounded-md hover:bg-indigo-100"><input type="radio" name="handover" value="ปฏิบัติ" class="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500"> <span class="text-sm">ปฏิบัติ</span></label>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <fieldset class="p-4 border border-purple-200 rounded-lg bg-purple-50">
+                     <legend class="text-md font-semibold text-purple-700 mb-3">💓 สัญญาณชีพก่อนย้าย</legend>
+                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                         <div>
+                             <label for="bp" class="block text-xs font-medium text-gray-600 mb-1">BP:</label>
+                             <input type="text" id="bp" name="bp" placeholder="e.g., 120/80">
+                         </div>
+                         <div>
+                             <label for="hr" class="block text-xs font-medium text-gray-600 mb-1">HR:</label>
+                             <input type="number" id="hr" name="hr" placeholder="e.g., 75">
+                         </div>
+                         <div>
+                             <label for="o2sat" class="block text-xs font-medium text-gray-600 mb-1">O2sat:</label>
+                             <input type="number" id="o2sat" name="o2sat" placeholder="e.g., 98">
+                         </div>
+                         <div>
+                             <label for="rr" class="block text-xs font-medium text-gray-600 mb-1">RR:</label>
+                             <input type="number" id="rr" name="rr" placeholder="e.g., 16">
+                         </div>
+                         <div class="col-span-2 sm:col-span-3 md:col-span-5">
+                             <label for="remark-pre" class="block text-xs font-medium text-gray-600 mb-1">Remark:</label>
+                             <input type="text" id="remark-pre" name="remarkPre" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)">
+                         </div>
+                     </div>
+                </fieldset>
+
+                <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <label for="recorder" class="block text-sm font-medium text-gray-700 mb-1">ผู้บันทึก:</label>
+                    <input type="text" id="recorder" name="recorder" required>
+                </div>
+
+                <div class="text-center pt-4">
+                    <button type="submit" class="btn btn-primary">💾 บันทึกข้อมูลก่อนย้าย</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="part2" class="section-container hidden">
+            <h2 class="text-xl sm:text-2xl font-semibold text-indigo-700 mb-6 border-b border-indigo-200 pb-3">📂 ทะเบียนการเคลื่อนย้าย</h2>
+            <div id="transfer-log" class="space-y-5">
+                <p class="text-gray-500 text-center">ยังไม่มีข้อมูลการเคลื่อนย้ายที่บันทึกไว้</p>
+            </div>
+        </section>
+
+        <footer class="text-center mt-10 pt-6 border-t border-gray-300 text-xs sm:text-sm text-gray-500">
+            Transfer Anes KPH © 2025 - Powered by S.Sanguansat
+        </footer>
+    </div>
+
+    <div id="pdf-content" style="position: absolute; left: -9999px; top: auto; width: 210mm; background: white; color: black;">
+        </div>
+
+    <script>
+        // --- Global Variables (will be assigned in initializePage) ---
+        let preTransferForm; 
+        let transferLogDiv;
+        let pdfContentDiv;
+        let transferData = []; 
+        let editingRecordId = null; 
+
+        // --- Utility Functions ---
+        function getFormData(form) {
+            const formData = new FormData(form);
+            const data = {};
+            const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            const checkboxData = {};
+            checkboxes.forEach(cb => {
+                if (!checkboxData[cb.name]) {
+                    checkboxData[cb.name] = [];
+                }
+                if (cb.checked) {
+                    checkboxData[cb.name].push(cb.value);
+                }
+            });
+
+            const radioData = {};
+            form.querySelectorAll('input[type="radio"]').forEach(radio => {
+                if (radio.checked) {
+                    radioData[radio.name] = radio.value;
+                }
+            });
+
+            formData.forEach((value, key) => {
+                if (!checkboxData.hasOwnProperty(key) && !radioData.hasOwnProperty(key)) {
+                    data[key] = value;
+                }
+            });
+
+            Object.assign(data, checkboxData, radioData);
+
+            if (form.id === 'pre-transfer-form') {
+                if (data.operatingRoom === 'อื่นๆ') {
+                    data.operatingRoomOther = form.elements['operatingRoomOther'] ? form.elements['operatingRoomOther'].value : '';
+                } else {
+                    data.operatingRoomOther = ''; 
+                }
+                if (data.destination === 'อื่นๆ') {
+                    data.destinationOther = form.elements['destinationOther'] ? form.elements['destinationOther'].value : '';
+                } else {
+                    data.destinationOther = '';
+                }
+            }
+            return data;
+        }
+        
+        function loadDataFromFirebase() { // Changed to be a standard function
+            console.log("loadDataFromFirebase called");
+            if (!window.fbRef || !window.fbDb || !window.fbOnValue) {
+                console.error("Firebase functions not available for loadDataFromFirebase. Retrying in 1s...");
+                setTimeout(loadDataFromFirebase, 1000); // Retry if Firebase isn't ready
+                return;
+            }
+            const transfersRef = window.fbRef(window.fbDb, 'transfers/');
+            window.fbOnValue(transfersRef, (snapshot) => {
+                const data = snapshot.val();
+                console.log("Firebase data received:", data);
+                if (data) {
+                    transferData = Object.keys(data).map(key => ({
+                        id: key, 
+                        ...data[key]
+                    }));
+                } else {
+                    transferData = [];
+                }
+                renderTransferLog();
+            }, (error) => {
+                console.error("Firebase read failed: " + error.code, error);
+                alert("เกิดข้อผิดพลาดในการโหลดข้อมูลจากฐานข้อมูล: " + error.message);
+                transferData = []; 
+                renderTransferLog();
+            });
+        }
+
+        function showSection(sectionId) {
+            if (!document.getElementById('part1') || !document.getElementById('part2')) {
+                console.error("Section elements not found in showSection");
+                return;
+            }
+            document.getElementById('part1').classList.add('hidden');
+            document.getElementById('part2').classList.add('hidden');
+            if (document.getElementById('nav-part1')) document.getElementById('nav-part1').classList.remove('active');
+            if (document.getElementById('nav-part2')) document.getElementById('nav-part2').classList.remove('active');
+            
+            const sectionToShow = document.getElementById(sectionId);
+            const navButtonToActivate = document.getElementById(`nav-${sectionId}`);
+
+            if (sectionToShow) sectionToShow.classList.remove('hidden');
+            if (navButtonToActivate) navButtonToActivate.classList.add('active');
+            
+             if (sectionId === 'part2') {
+                renderTransferLog(); 
+             }
+        }
+        
+        function toggleSelectOtherInput(selectElement, inputId) {
+            const inputField = document.getElementById(inputId);
+            if (!inputField) return;
+            if (selectElement.value === 'อื่นๆ') {
+                inputField.classList.remove('hidden');
+                inputField.required = true;
+            } else {
+                inputField.classList.add('hidden');
+                inputField.value = '';
+                inputField.required = false;
+            }
+        }
+
+        function toggleOtherInput(checkbox, inputId) {
+            const inputField = document.getElementById(inputId);
+            if (!inputField) {
+                console.warn("Other input field not found:", inputId);
+                return;
+            }
+            if (checkbox.checked && checkbox.value === 'Other') {
+                inputField.classList.remove('hidden');
+                inputField.required = true;
+            } else {
+                inputField.classList.add('hidden');
+                inputField.value = '';
+                inputField.required = false;
+            }
+        }
+
+        function toggleComplicationDetails(show, recordId) {
+            const detailsDiv = document.getElementById(`complication-details-${recordId}`);
+            const otherInput = document.getElementById(`complication-other-input-${recordId}`);
+            if (!detailsDiv) return;
+
+            if (show) {
+                detailsDiv.classList.remove('hidden');
+            } else {
+                detailsDiv.classList.add('hidden');
+                detailsDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                if (otherInput) {
+                    otherInput.value = '';
+                    otherInput.classList.add('hidden');
+                    otherInput.required = false;
+                }
+            }
+        }
+
+        function toggleDislodgementDetails(show, recordId) {
+            const detailsDiv = document.getElementById(`dislodgement-details-${recordId}`);
+            if (!detailsDiv) return;
+
+            if (show) {
+                detailsDiv.classList.remove('hidden');
+            } else {
+                detailsDiv.classList.add('hidden');
+                detailsDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            try {
+                 return new Date(dateString).toLocaleDateString('th-TH', options);
+            } catch (e) {
+                console.error("Error formatting date:", dateString, e);
+                return 'Invalid Date';
+            }
+        }
+
+        function formatTime(timeString) {
+             if (!timeString) return 'N/A';
+             const parts = timeString.split(':');
+             if (parts.length !== 2) return 'Invalid Time';
+             const hours = parseInt(parts[0], 10);
+             const minutes = parseInt(parts[1], 10);
+             if (isNaN(hours) || isNaN(minutes)) return 'Invalid Time';
+
+             const date = new Date();
+             date.setHours(hours, minutes);
+             const options = { hour: '2-digit', minute: '2-digit', hour12: false };
+             return date.toLocaleTimeString('th-TH', options);
+        }
+
+        function renderTransferLog() {
+            if (!transferLogDiv) { 
+                console.error("transferLogDiv is not initialized in renderTransferLog.");
+                return;
+            }
+            transferLogDiv.innerHTML = ''; 
+
+            if (transferData.length === 0) {
+                transferLogDiv.innerHTML = '<p class="text-gray-500 text-center py-8">ยังไม่มีข้อมูลการเคลื่อนย้ายที่บันทึกไว้ 🛌</p>';
+                return;
+            }
+
+            const sortedData = [...transferData].sort((a, b) => {
+                const timeA = a.createdAt || 0;
+                const timeB = b.createdAt || 0;
+                return timeB - timeA;
+            });
+
+            sortedData.forEach(record => {
+                const card = document.createElement('div');
+                card.className = 'log-card relative';
+                card.id = `log-card-${record.id}`;
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = "absolute top-3 right-3 flex gap-2"; 
+
+                const editButton = document.createElement('button');
+                editButton.className = "p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-md transition-colors";
+                editButton.title = "แก้ไข";
+                editButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>`;
+                editButton.onclick = () => editRecord(record.id);
+                actionsDiv.appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.className = "p-1.5 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-md transition-colors";
+                deleteButton.title = "ลบ";
+                deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`;
+                deleteButton.onclick = () => deleteRecord(record.id);
+                actionsDiv.appendChild(deleteButton);
+
+                const pdfButton = document.createElement('button');
+                pdfButton.className = "p-1.5 text-green-600 hover:text-green-800 hover:bg-green-100 rounded-md transition-colors";
+                pdfButton.title = "Export PDF";
+                pdfButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`;
+                pdfButton.onclick = () => generatePDF(record.id);
+                actionsDiv.appendChild(pdfButton);
+
+                card.appendChild(actionsDiv);
+
+                const contentDiv = document.createElement('div');
+                let opRoomDisplay = record.operatingRoom || 'N/A';
+                if (record.operatingRoom === 'อื่นๆ' && record.operatingRoomOther) {
+                    opRoomDisplay = `อื่นๆ: ${record.operatingRoomOther}`;
+                }
+                let destDisplay = record.destination || 'N/A';
+                if (record.destination === 'อื่นๆ' && record.destinationOther) {
+                    destDisplay = `อื่นๆ: ${record.destinationOther}`;
+                }
+
+                contentDiv.innerHTML = `
+                    <h3>${record.patientName || 'N/A'} (HN: ${record.hn || 'N/A'})</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600">
+                        <p><span class="font-semibold text-gray-700">วันที่ย้าย:</span> ${formatDate(record.transferDate)} ${formatTime(record.transferTime)}</p>
+                        <p><span class="font-semibold text-gray-700">ห้องผ่าตัด:</span> ${opRoomDisplay}</p>
+                        <p><span class="font-semibold text-gray-700">ปลายทาง:</span> ${destDisplay}</p>
+                        <p><span class="font-semibold text-gray-700">ผู้บันทึก (ก่อนย้าย):</span> ${record.recorder || 'N/A'}</p>
+                        <p class="col-span-1 sm:col-span-2"><span class="font-semibold text-gray-700">บันทึกเมื่อ:</span> ${record.createdAt ? new Date(record.createdAt).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short'}) : 'N/A'}</p>
+                        ${record.transporter ? `<p class="col-span-1 sm:col-span-2"><span class="font-semibold text-gray-700">ผู้นำส่ง:</span> ${record.transporter}</p>` : ''}
+                        ${record.postTransferData && record.postTransferData.receiver ? `<p class="col-span-1 sm:col-span-2"><span class="font-semibold text-gray-700">ผู้รับย้าย:</span> ${record.postTransferData.receiver}</p>` : ''}
+                    </div>
+                `;
+                card.appendChild(contentDiv);
+
+                const arrivalDiv = document.createElement('div');
+                arrivalDiv.className = "mt-4 pt-4 border-t border-dashed border-gray-300";
+                if (record.arrivalData) {
+                    arrivalDiv.innerHTML = `
+                        <h4>➡️🏥 ข้อมูลเมื่อถึงปลายทาง</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-sm text-gray-600">
+                             <p><span class="font-semibold text-gray-700">เวลาถึง:</span> ${formatTime(record.arrivalData.arrivalTime)}</p>
+                             <p><span class="font-semibold text-gray-700">BP:</span> ${record.arrivalData.bpArrival || 'N/A'}</p>
+                             <p><span class="font-semibold text-gray-700">HR:</span> ${record.arrivalData.hrArrival || 'N/A'}</p>
+                             <p><span class="font-semibold text-gray-700">O2sat:</span> ${record.arrivalData.o2satArrival || 'N/A'}</p>
+                             <p><span class="font-semibold text-gray-700">RR:</span> ${record.arrivalData.rrArrival || 'N/A'}</p>
+                             <p class="col-span-2 sm:col-span-3"><span class="font-semibold text-gray-700">Remark:</span> ${record.arrivalData.remarkArrival || 'N/A'}</p>
+                         </div>`;
+                } else {
+                    arrivalDiv.innerHTML = `
+                        <h4>➡️🏥 บันทึกข้อมูลเมื่อถึงปลายทาง</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 items-end mt-2">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">เวลาถึง:</label>
+                                <input type="time" id="arrival-time-${record.id}" class="text-xs p-1.5 w-full">
+                            </div>
+                             <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">BP:</label>
+                                <input type="text" id="bp-arrival-${record.id}" placeholder="e.g., 120/80" class="text-xs p-1.5 w-full">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">HR:</label>
+                                <input type="number" id="hr-arrival-${record.id}" placeholder="e.g., 75" class="text-xs p-1.5 w-full">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">O2sat:</label>
+                                <input type="number" id="o2sat-arrival-${record.id}" placeholder="e.g., 98" class="text-xs p-1.5 w-full">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">RR:</label>
+                                <input type="number" id="rr-arrival-${record.id}" placeholder="e.g., 16" class="text-xs p-1.5 w-full">
+                            </div>
+                            <div class="col-span-2 sm:col-span-3 md:col-span-4">
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Remark:</label>
+                                <input type="text" id="remark-arrival-${record.id}" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)" class="text-xs p-1.5 w-full">
+                            </div>
+                            <div class="col-span-2 sm:col-span-3 md:col-span-1">
+                                <button class="btn btn-secondary w-full text-xs py-1.5 px-2 mt-2">💾 บันทึก</button>
+                            </div>
+                        </div>
+                    `;
+                    const saveArrivalButton = arrivalDiv.querySelector('button');
+                    if (saveArrivalButton) {
+                        saveArrivalButton.onclick = () => saveArrivalData(record.id);
+                    }
+                }
+                card.appendChild(arrivalDiv);
+                
+                const postTransferDiv = document.createElement('div');
+                postTransferDiv.className = "mt-4 pt-4 border-t border-dashed border-gray-300"; 
+                
+                const postTransferFormElement = document.createElement('form');
+                postTransferFormElement.id = `post-transfer-form-${record.id}`;
+                postTransferFormElement.className = "space-y-4"; 
+                postTransferFormElement.onsubmit = (e) => { 
+                    e.preventDefault();
+                    savePostTransferDataInLog(record.id);
+                };
+
+                if (record.postTransferData) {
+                    const post = record.postTransferData;
+                    postTransferDiv.innerHTML = `
+                        <h4>🩺 ข้อมูลหลังเคลื่อนย้าย</h4>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            <p><span class="font-semibold text-gray-700">อาการไม่พึงประสงค์:</span> ${post.complications || 'N/A'}</p>
+                            ${post.complications === 'พบ' ? `<ul>${(post.complicationDetails && post.complicationDetails.length > 0) ? post.complicationDetails.map(item => `<li>${item === 'Other' ? `อื่นๆ: ${post.complicationOther || 'N/A'}` : item}</li>`).join('') : '<li>ไม่ได้ระบุ</li>'}</ul>` : ''}
+                            <p><span class="font-semibold text-gray-700">ภาวะขาดออกซิเจน:</span> ${post.hypoxia || 'N/A'}</p>
+                            <p><span class="font-semibold text-gray-700">อุปกรณ์เลื่อนหลุด:</span> ${post.dislodgement || 'N/A'}</p>
+                            ${post.dislodgement === 'มี' ? `<ul>${(post.dislodgementDetails && post.dislodgementDetails.length > 0) ? post.dislodgementDetails.map(item => `<li>${item}</li>`).join('') : '<li>ไม่ได้ระบุ</li>'}</ul>` : ''}
+                            <p><span class="font-semibold text-gray-700">ผู้นำส่ง:</span> ${post.transporter || 'N/A'}</p>
+                        </div>`;
+                } else {
+                    postTransferFormElement.innerHTML = `
+                         <h4>🩺 บันทึกข้อมูลหลังเคลื่อนย้าย</h4>
+                         <fieldset class="p-3 border border-red-200 rounded-lg bg-red-50/50 space-y-2 text-sm">
+                             <legend class="text-sm font-semibold text-red-700 mb-1">อาการไม่พึงประสงค์</legend>
+                             <div class="flex gap-4 mb-1">
+                                 <label class="flex items-center p-1.5 rounded-md hover:bg-red-100"><input type="radio" name="complications-${record.id}" value="ไม่พบ" class="mr-1.5 h-4 w-4 text-indigo-600 focus:ring-indigo-500" required onchange="toggleComplicationDetails(false, '${record.id}')"> ไม่พบ</label>
+                                 <label class="flex items-center p-1.5 rounded-md hover:bg-red-100"><input type="radio" name="complications-${record.id}" value="พบ" class="mr-1.5 h-4 w-4 text-indigo-600 focus:ring-indigo-500" onchange="toggleComplicationDetails(true, '${record.id}')"> พบ</label>
+                             </div>
+                             <div id="complication-details-${record.id}" class="hidden space-y-1 pl-4">
+                                 <p class="text-xs text-gray-600">ระบุ (เลือกได้หลายข้อ):</p>
+                                 <div class="checkbox-row"><label><input type="checkbox" name="complicationType-${record.id}" value="Hypertension"><span class="checkbox-text">Hypertension</span></label></div>
+                                 <div class="checkbox-row"><label><input type="checkbox" name="complicationType-${record.id}" value="Hypotension"><span class="checkbox-text">Hypotension</span></label></div>
+                                 <div class="checkbox-row"><label><input type="checkbox" name="complicationType-${record.id}" value="Bradycardia"><span class="checkbox-text">Bradycardia</span></label></div>
+                                 <div class="checkbox-row"><label><input type="checkbox" name="complicationType-${record.id}" value="Tachycardia"><span class="checkbox-text">Tachycardia</span></label></div>
+                                 <div class="checkbox-row"><label><input type="checkbox" name="complicationType-${record.id}" value="Cardiac arrest"><span class="checkbox-text">Cardiac arrest</span></label></div>
+                                 <div class="checkbox-row"><label><input type="checkbox" name="complicationType-${record.id}" value="Other" onchange="toggleOtherInput(this, 'complication-other-input-${record.id}')"><span class="checkbox-text">อื่นๆ</span></label></div>
+                                 <input type="text" id="complication-other-input-${record.id}" name="complicationOther-${record.id}" placeholder="ระบุ..." class="mt-1 hidden w-full text-xs p-1.5">
+                             </div>
+                         </fieldset>
+
+                         <fieldset class="p-3 border border-blue-200 rounded-lg bg-blue-50/50 space-y-1 text-sm">
+                             <legend class="text-sm font-semibold text-blue-700 mb-1">ภาวะขาดออกซิเจน</legend>
+                             <div class="flex gap-4">
+                                 <label class="flex items-center p-1.5 rounded-md hover:bg-blue-100"><input type="radio" name="hypoxia-${record.id}" value="ไม่มี" class="mr-1.5 h-4 w-4 text-indigo-600 focus:ring-indigo-500" required> ไม่มี</label>
+                                 <label class="flex items-center p-1.5 rounded-md hover:bg-blue-100"><input type="radio" name="hypoxia-${record.id}" value="มี" class="mr-1.5 h-4 w-4 text-indigo-600 focus:ring-indigo-500"> มี</label>
+                             </div>
+                         </fieldset>
+
+                         <fieldset class="p-3 border border-yellow-200 rounded-lg bg-yellow-50/50 space-y-2 text-sm">
+                             <legend class="text-sm font-semibold text-yellow-700 mb-1">อุปกรณ์เลื่อนหลุด</legend>
+                              <div class="flex gap-4 mb-1">
+                                 <label class="flex items-center p-1.5 rounded-md hover:bg-yellow-100"><input type="radio" name="dislodgement-${record.id}" value="ไม่มี" class="mr-1.5 h-4 w-4 text-indigo-600 focus:ring-indigo-500" required onchange="toggleDislodgementDetails(false, '${record.id}')"> ไม่มี</label>
+                                 <label class="flex items-center p-1.5 rounded-md hover:bg-yellow-100"><input type="radio" name="dislodgement-${record.id}" value="มี" class="mr-1.5 h-4 w-4 text-indigo-600 focus:ring-indigo-500" onchange="toggleDislodgementDetails(true, '${record.id}')"> มี</label>
+                             </div>
+                             <div id="dislodgement-details-${record.id}" class="hidden space-y-1 pl-4">
+                                  <p class="text-xs text-gray-600">ระบุ (เลือกได้หลายข้อ):</p>
+                                  <div class="checkbox-row"><label><input type="checkbox" name="dislodgementType-${record.id}" value="ท่อช่วยหายใจ"><span class="checkbox-text">ท่อช่วยหายใจ</span></label></div>
+                                  <div class="checkbox-row"><label><input type="checkbox" name="dislodgementType-${record.id}" value="A-line"><span class="checkbox-text">A-line</span></label></div>
+                                  <div class="checkbox-row"><label><input type="checkbox" name="dislodgementType-${record.id}" value="C-line"><span class="checkbox-text">C-line</span></label></div>
+                                  <div class="checkbox-row"><label><input type="checkbox" name="dislodgementType-${record.id}" value="เลือดหรือส่วนประกอบของเลือด"><span class="checkbox-text">เลือด/ส่วนประกอบเลือด</span></label></div>
+                                  <div class="checkbox-row"><label><input type="checkbox" name="dislodgementType-${record.id}" value="สารน้ำ"><span class="checkbox-text">สารน้ำ</span></label></div>
+                                  <div class="checkbox-row"><label><input type="checkbox" name="dislodgementType-${record.id}" value="สายระบาย"><span class="checkbox-text">สายระบาย</span></label></div>
+                                  <div class="checkbox-row"><label><input type="checkbox" name="dislodgementType-${record.id}" value="สายสวนปัสสาวะ"><span class="checkbox-text">สายสวนปัสสาวะ</span></label></div>
+                             </div>
+                         </fieldset>
+
+                         <div class="text-sm">
+                            <label for="transporter-${record.id}" class="block text-xs font-medium text-gray-700 mb-1">ผู้นำส่ง:</label>
+                            <input type="text" id="transporter-${record.id}" name="transporter-${record.id}" required class="text-xs p-1.5 w-full">
+                         </div>
+                         <div class="text-sm">
+                            <label for="receiver-${record.id}" class="block text-xs font-medium text-gray-700 mb-1">ผู้รับย้าย:</label>
+                            <input type="text" id="receiver-${record.id}" name="receiver-${record.id}" required class="text-xs p-1.5 w-full">
+                         </div>
+
+                         <div class="text-center pt-2">
+                             <button type="submit" class="btn btn-primary w-full text-xs py-1.5 px-2">💾 บันทึกข้อมูลหลังย้าย</button>
+                         </div>
+                    `;
+                    postTransferDiv.appendChild(postTransferFormElement); 
+                }
+                card.appendChild(postTransferDiv); 
+
+
+                transferLogDiv.appendChild(card);
+            });
+        }
+
+
+        // --- Event Handlers ---
+        function initializeAppEventListenersAndLogic() {
+            console.log("initializeAppEventListenersAndLogic called");
+            if (preTransferForm) {
+                preTransferForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const dataToSave = getFormData(preTransferForm); 
+                    dataToSave.createdAt = Date.now(); 
+
+                    if (editingRecordId) {
+                        const recordRef = window.fbRef(window.fbDb, 'transfers/' + editingRecordId);
+                        dataToSave.updatedAt = Date.now(); 
+                        window.fbSet(recordRef, dataToSave)
+                            .then(() => {
+                                alert('แก้ไขข้อมูลสำเร็จ! 🎉');
+                                editingRecordId = null;
+                                preTransferForm.reset();
+                                document.getElementById('airway-other-input').classList.add('hidden');
+                                document.getElementById('preparation-other-input').classList.add('hidden');
+                                document.getElementById('operating-room-other-input').classList.add('hidden');
+                                document.getElementById('destination-other-input').classList.add('hidden');
+                                showSection('part2'); 
+                            })
+                            .catch((error) => {
+                                console.error("Error updating data: ", error);
+                                alert("เกิดข้อผิดพลาดในการแก้ไขข้อมูล: " + error.message);
+                            });
+                    } else {
+                        const newTransferRef = window.fbPush(window.fbRef(window.fbDb, 'transfers'));
+                        window.fbSet(newTransferRef, dataToSave)
+                            .then(() => {
+                                alert('บันทึกข้อมูลสำเร็จ! ✨');
+                                preTransferForm.reset();
+                                document.getElementById('airway-other-input').classList.add('hidden');
+                                document.getElementById('preparation-other-input').classList.add('hidden');
+                                document.getElementById('operating-room-other-input').classList.add('hidden');
+                                document.getElementById('destination-other-input').classList.add('hidden');
+                                showSection('part2'); 
+                            })
+                            .catch((error) => {
+                                console.error("Error saving new data: ", error);
+                                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + error.message);
+                            });
+                    }
+                });
+            } else {
+                console.error("preTransferForm not found during event listener setup.");
+            }
+        }
+
+
+        // --- Record Actions (Edit, Delete, Save Arrival, Save Post-Transfer in Log) ---
+        window.editRecord = function(id) {
+            const record = transferData.find(rec => rec.id === id);
+            if (!record || !preTransferForm) {
+                console.error("Record or preTransferForm not found for editRecord");
+                return;
+            }
+
+            editingRecordId = id;
+            preTransferForm.reset(); 
+
+            document.getElementById('operating-room-other-input').classList.add('hidden');
+            document.getElementById('operating-room-other-input').value = '';
+            document.getElementById('operating-room-other-input').required = false;
+            document.getElementById('destination-other-input').classList.add('hidden');
+            document.getElementById('destination-other-input').value = '';
+            document.getElementById('destination-other-input').required = false;
+            document.getElementById('airway-other-input').classList.add('hidden');
+            document.getElementById('airway-other-input').value = '';
+            document.getElementById('preparation-other-input').classList.add('hidden');
+            document.getElementById('preparation-other-input').value = '';
+
+
+            for (const key in record) {
+                if (key === 'postTransferData' || key === 'arrivalData' || key === 'id' || key === 'createdAt' || key === 'updatedAt') continue;
+
+                const element = preTransferForm.elements[key];
+                if (element) {
+                    if (element.type === 'checkbox') {
+                        if (Array.isArray(record[key])) {
+                             const checkboxes = preTransferForm.querySelectorAll(`input[type="checkbox"][name="${key}"]`);
+                             checkboxes.forEach(cb => {
+                                 cb.checked = record[key].includes(cb.value);
+                                 const otherInputId = key === 'airway' ? 'airway-other-input' : (key === 'preparation' ? 'preparation-other-input' : null);
+                                 if (cb.value === 'Other' && otherInputId) {
+                                     const otherInput = document.getElementById(otherInputId);
+                                     if (otherInput) {
+                                         if (cb.checked) {
+                                             otherInput.classList.remove('hidden');
+                                             otherInput.value = record[key + 'Other'] || '';
+                                             otherInput.required = true;
+                                         } else {
+                                             otherInput.classList.add('hidden');
+                                              otherInput.value = '';
+                                              otherInput.required = false;
+                                         }
+                                     }
+                                 }
+                             });
+                        }
+                    } else if (element.type === 'radio') {
+                        const radio = preTransferForm.querySelector(`input[type="radio"][name="${key}"][value="${record[key]}"]`);
+                        if (radio) radio.checked = true;
+                    } else if (element.tagName === 'SELECT') {
+                        const otherInputId = key === 'operatingRoom' ? 'operating-room-other-input' : (key === 'destination' ? 'destination-other-input' : null);
+                        const otherValueField = key === 'operatingRoom' ? 'operatingRoomOther' : (key === 'destination' ? 'destinationOther' : null);
+                        
+                        if (otherInputId && record[otherValueField]) {
+                            element.value = 'อื่นๆ';
+                            const otherInput = document.getElementById(otherInputId);
+                            otherInput.classList.remove('hidden');
+                            otherInput.value = record[otherValueField];
+                            otherInput.required = true;
+                        } else {
+                            element.value = record[key] || '';
+                            if(otherInputId) {
+                                const otherInput = document.getElementById(otherInputId);
+                                otherInput.classList.add('hidden');
+                                otherInput.value = '';
+                                otherInput.required = false;
+                            }
+                        }
+                    } else {
+                        element.value = record[key] || '';
+                    }
+                } else {
+                     const otherInputIds = {
+                         'airwayOther': 'airway-other-input',
+                         'preparationOther': 'preparation-other-input',
+                         'operatingRoomOther': 'operating-room-other-input',
+                         'destinationOther': 'destination-other-input'
+                     };
+                     if (otherInputIds[key]) {
+                         const otherInput = document.getElementById(otherInputIds[key]);
+                         if (otherInput && record[key]) { 
+                             otherInput.value = record[key];
+                         }
+                     }
+                }
+            }
+            showSection('part1');
+        }
+
+        window.deleteRecord = function(id) {
+            const recordToDelete = transferData.find(rec => rec.id === id);
+            const patientInfo = recordToDelete ? `${recordToDelete.patientName} (HN: ${recordToDelete.hn})` : 'รายการนี้';
+
+            if (confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลของ ${patientInfo}? 🗑️ การกระทำนี้ไม่สามารถย้อนกลับได้`)) {
+                window.fbRemove(window.fbRef(window.fbDb, 'transfers/' + id))
+                    .then(() => {
+                        alert('ลบรายการสำเร็จ! 💨');
+                    })
+                    .catch((error) => {
+                        console.error("Error deleting data: ", error);
+                        alert("เกิดข้อผิดพลาดในการลบข้อมูล: " + error.message);
+                    });
+            }
+        }
+
+
+        window.saveArrivalData = function(id) {
+             const recordIndex = transferData.findIndex(rec => rec.id === id);
+             if (recordIndex === -1) {
+                 alert('ไม่พบข้อมูลรายการเคลื่อนย้าย');
+                 return;
+             }
+
+             const arrivalTime = document.getElementById(`arrival-time-${id}`)?.value;
+             const bpArrival = document.getElementById(`bp-arrival-${id}`)?.value;
+             const hrArrival = document.getElementById(`hr-arrival-${id}`)?.value;
+             const o2satArrival = document.getElementById(`o2sat-arrival-${id}`)?.value;
+             const rrArrival = document.getElementById(`rr-arrival-${id}`)?.value;
+             const remarkArrival = document.getElementById(`remark-arrival-${id}`)?.value;
+
+             if (!arrivalTime) {
+                 alert('กรุณากรอกเวลาที่ถึงปลายทาง');
+                 return;
+             }
+
+             const arrivalDataObject = {
+                 arrivalTime,
+                 bpArrival,
+                 hrArrival,
+                 o2satArrival,
+                 rrArrival,
+                 remarkArrival,
+                 savedAt: Date.now()
+             };
+            
+            const updates = {};
+            updates[`transfers/${id}/arrivalData`] = arrivalDataObject;
+            updates[`transfers/${id}/updatedAt`] = Date.now();
+
+            window.fbUpdate(window.fbRef(window.fbDb), updates)
+                .then(() => {
+                    alert('บันทึกข้อมูลเมื่อถึงปลายทางสำเร็จ! ✅');
+                })
+                .catch((error) => {
+                    console.error("Error saving arrival data: ", error);
+                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + error.message);
+                });
+        }
+
+        window.savePostTransferDataInLog = function(recordId) {
+            const formElement = document.getElementById(`post-transfer-form-${recordId}`);
+            if (!formElement) {
+                 alert('ไม่พบฟอร์มข้อมูลหลังย้าย');
+                 return;
+            }
+
+             const data = {};
+             const formData = new FormData(formElement);
+
+             formElement.querySelectorAll('input[type="radio"]').forEach(radio => {
+                 if (radio.checked) {
+                     const name = radio.name.replace(`-${recordId}`, '');
+                     data[name] = radio.value;
+                 }
+             });
+
+             formElement.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                 const name = cb.name.replace(`-${recordId}`, '');
+                 if (!data[name]) {
+                     data[name] = [];
+                 }
+                 if (cb.checked) {
+                     data[name].push(cb.value);
+                 }
+             });
+
+             formData.forEach((value, key) => {
+                 const name = key.replace(`-${recordId}`, '');
+                 if (!data.hasOwnProperty(name) || name.endsWith('Other') || name === 'transporter' || name === 'receiver') { 
+                      data[name] = value;
+                 }
+             });
+
+             const postDataObject = {
+                 complications: data.complications,
+                 complicationDetails: data.complications === 'พบ' ? (data.complicationType || []) : [],
+                 complicationOther: data.complications === 'พบ' && data.complicationType?.includes('Other') ? data[`complicationOther`] : '', 
+                 hypoxia: data.hypoxia,
+                 dislodgement: data.dislodgement,
+                 dislodgementDetails: data.dislodgement === 'มี' ? (data.dislodgementType || []) : [],
+                 transporter: data.transporter,
+                 receiver: data.receiver, 
+                 savedAt: Date.now()
+             };
+
+             if (!postDataObject.complications || !postDataObject.hypoxia || !postDataObject.dislodgement || !postDataObject.transporter || !postDataObject.receiver) { 
+                 alert('กรุณากรอกข้อมูลหลังย้ายให้ครบถ้วน (รวมถึงผู้รับย้าย)');
+                 return;
+             }
+            
+            const updates = {};
+            updates[`transfers/${recordId}/postTransferData`] = postDataObject;
+            updates[`transfers/${recordId}/transporter`] = data.transporter; 
+            updates[`transfers/${recordId}/updatedAt`] = Date.now();
+
+            window.fbUpdate(window.fbRef(window.fbDb), updates)
+                .then(() => {
+                    alert('บันทึกข้อมูลหลังเคลื่อนย้ายสำเร็จ! 👍');
+                })
+                .catch((error) => {
+                    console.error("Error saving post-transfer data: ", error);
+                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + error.message);
+                });
+        }
+
+
+        window.generatePDF = async function(id) {
+            const record = transferData.find(rec => rec.id === id);
+            if (!record) {
+                alert('ไม่พบข้อมูลสำหรับสร้าง PDF');
+                return;
+            }
+
+            let opRoomForPdf = record.operatingRoom;
+            if (record.operatingRoom === 'อื่นๆ' && record.operatingRoomOther) {
+                opRoomForPdf = `อื่นๆ: ${record.operatingRoomOther}`;
+            }
+            let destForPdf = record.destination;
+            if (record.destination === 'อื่นๆ' && record.destinationOther) {
+                destForPdf = `อื่นๆ: ${record.destinationOther}`;
+            }
+
+
+            let pdfHtml = `
+                <div class="pdf-container">
+                    <h1>Transfer Anes KPH - Checklist Report</h1>
+                    <p><strong>วันที่สร้างรายงาน:</strong> ${new Date().toLocaleString('th-TH')}</p>
+
+                    <div class="section">
+                        <h2>ข้อมูลผู้ป่วยและการเคลื่อนย้าย</h2>
+                        <div class="grid">
+                            <div><span class="label">HN:</span><span class="value">${record.hn || 'N/A'}</span></div>
+                            <div><span class="label">ชื่อผู้ป่วย:</span><span class="value">${record.patientName || 'N/A'}</span></div>
+                            <div><span class="label">ห้องผ่าตัด:</span><span class="value">${opRoomForPdf}</span></div>
+                            <div><span class="label">ย้ายไป:</span><span class="value">${destForPdf}</span></div>
+                            <div><span class="label">วันที่ย้าย:</span><span class="value">${formatDate(record.transferDate)}</span></div>
+                            <div><span class="label">เวลาย้าย:</span><span class="value">${formatTime(record.transferTime)}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>ข้อมูลเตรียมก่อนเคลื่อนย้าย</h2>
+                        <div class="grid">
+                            <div>
+                                <strong>Airway/Oxygen:</strong>
+                                <ul>${(record.airway && record.airway.length > 0) ? record.airway.map(item => `<li>${item === 'Other' ? `อื่นๆ: ${record.airwayOther || 'N/A'}` : item}</li>`).join('') : '<li>N/A</li>'}</ul>
+                            </div>
+                            <div>
+                                <strong>ความครบถ้วนอุปกรณ์:</strong>
+                                <ul>${(record.equipment && record.equipment.length > 0) ? record.equipment.map(item => `<li>${item}</li>`).join('') : '<li>N/A</li>'}</ul>
+                            </div>
+                            <div>
+                                <strong>การเตรียมพร้อม:</strong>
+                                <ul>${(record.preparation && record.preparation.length > 0) ? record.preparation.map(item => `<li>${item === 'Other' ? `อื่นๆ: ${record.preparationOther || 'N/A'}` : item}</li>`).join('') : '<li>N/A</li>'}</ul>
+                            </div>
+                            <div>
+                                <strong>การส่งต่อข้อมูล:</strong>
+                                <p>${record.handover || 'N/A'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                     <div class="section">
+                        <h2>สัญญาณชีพก่อนย้าย</h2>
+                        <div class="grid">
+                            <div><span class="label">BP:</span><span class="value">${record.bp || 'N/A'}</span></div>
+                            <div><span class="label">HR:</span><span class="value">${record.hr || 'N/A'}</span></div>
+                            <div><span class="label">O2sat:</span><span class="value">${record.o2sat || 'N/A'}</span></div>
+                            <div><span class="label">RR:</span><span class="value">${record.rr || 'N/A'}</span></div>
+                            <div style="grid-column: span 2;"><span class="label">Remark:</span><span class="value">${record.remarkPre || 'N/A'}</span></div>
+                            <div><span class="label">ผู้บันทึก:</span><span class="value">${record.recorder || 'N/A'}</span></div>
+                        </div>
+                    </div>`;
+
+             if (record.arrivalData) {
+                 pdfHtml += `
+                     <div class="section">
+                         <h2>สัญญาณชีพเมื่อถึงปลายทาง</h2>
+                         <div class="grid">
+                             <div><span class="label">เวลาถึง:</span><span class="value">${formatTime(record.arrivalData.arrivalTime)}</span></div>
+                             <div><span class="label">BP:</span><span class="value">${record.arrivalData.bpArrival || 'N/A'}</span></div>
+                             <div><span class="label">HR:</span><span class="value">${record.arrivalData.hrArrival || 'N/A'}</span></div>
+                             <div><span class="label">O2sat:</span><span class="value">${record.arrivalData.o2satArrival || 'N/A'}</span></div>
+                             <div><span class="label">RR:</span><span class="value">${record.arrivalData.rrArrival || 'N/A'}</span></div>
+                             <div style="grid-column: span 2;"><span class="label">Remark:</span><span class="value">${record.arrivalData.remarkArrival || 'N/A'}</span></div>
+                         </div>
+                     </div>`;
+             } else {
+                 pdfHtml += `<div class="section"><p>ยังไม่มีการบันทึกข้อมูลเมื่อถึงปลายทาง</p></div>`;
+             }
+
+             if (record.postTransferData) {
+                 const post = record.postTransferData;
+                 pdfHtml += `
+                     <div class="section">
+                         <h2>ข้อมูลหลังเคลื่อนย้าย</h2>
+                         <div><strong>อาการไม่พึงประสงค์:</strong> ${post.complications || 'N/A'}</div>`;
+                 if (post.complications === 'พบ') {
+                     pdfHtml += `<ul>${(post.complicationDetails && post.complicationDetails.length > 0) ? post.complicationDetails.map(item => `<li>${item === 'Other' ? `อื่นๆ: ${post.complicationOther || 'N/A'}` : item}</li>`).join('') : '<li>ไม่ได้ระบุ</li>'}</ul>`;
+                 }
+                 pdfHtml += `
+                         <div><strong>ภาวะขาดออกซิเจน:</strong> ${post.hypoxia || 'N/A'}</div>
+                         <div><strong>อุปกรณ์เลื่อนหลุด:</strong> ${post.dislodgement || 'N/A'}</div>`;
+                 if (post.dislodgement === 'มี') {
+                      pdfHtml += `<ul>${(post.dislodgementDetails && post.dislodgementDetails.length > 0) ? post.dislodgementDetails.map(item => `<li>${item}</li>`).join('') : '<li>ไม่ได้ระบุ</li>'}</ul>`;
+                 }
+                 pdfHtml += `<div><strong>ผู้นำส่ง:</strong> ${post.transporter || 'N/A'}</div>
+                         </div>`;
+             } else {
+                 pdfHtml += `<div class="section"><p>ยังไม่มีการบันทึกข้อมูลหลังเคลื่อนย้าย</p></div>`;
+             }
+
+            pdfHtml += `</div>`; 
+
+            pdfContentDiv.innerHTML = pdfHtml;
+
+            const { jsPDF } = window.jspdf;
+            try {
+                const canvas = await html2canvas(pdfContentDiv, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: 'p',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const ratio = Math.min((pdfWidth - 20) / imgWidth, (pdfHeight - 20) / imgHeight);
+                const imgX = 10;
+                const imgY = 10;
+                const effectiveImgHeight = imgHeight * ratio;
+
+                pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, effectiveImgHeight);
+
+                const fileName = `Transfer_Report_${record.hn || 'NoHN'}_${record.patientName || 'NoName'}.pdf`;
+                pdf.save(fileName);
+
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                alert("เกิดข้อผิดพลาดในการสร้างไฟล์ PDF");
+            } finally {
+                 pdfContentDiv.innerHTML = '';
+            }
+        };
+
+        // This function is now the main entry point after DOM is ready and Firebase module has set up window.fb*
+        function initializeApp() {
+            console.log("initializeApp called");
+            preTransferForm = document.getElementById('pre-transfer-form');
+            transferLogDiv = document.getElementById('transfer-log');
+            pdfContentDiv = document.getElementById('pdf-content');
+
+            if (!preTransferForm || !transferLogDiv || !pdfContentDiv) {
+                console.error("Critical DOM elements missing during initializeApp. App will not function correctly.");
+                alert("เกิดข้อผิดพลาดในการโหลดองค์ประกอบหน้าเว็บ โปรดลองรีเฟรช");
+                return;
+            }
+            
+            if (preTransferForm) {
+                preTransferForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const dataToSave = getFormData(preTransferForm); 
+                    dataToSave.createdAt = Date.now(); 
+
+                    if (editingRecordId) {
+                        const recordRef = window.fbRef(window.fbDb, 'transfers/' + editingRecordId);
+                        dataToSave.updatedAt = Date.now(); 
+                        window.fbSet(recordRef, dataToSave)
+                            .then(() => {
+                                alert('แก้ไขข้อมูลสำเร็จ! 🎉');
+                                editingRecordId = null;
+                                preTransferForm.reset();
+                                document.getElementById('airway-other-input').classList.add('hidden');
+                                document.getElementById('preparation-other-input').classList.add('hidden');
+                                document.getElementById('operating-room-other-input').classList.add('hidden');
+                                document.getElementById('destination-other-input').classList.add('hidden');
+                                showSection('part2'); 
+                            })
+                            .catch((error) => {
+                                console.error("Error updating data: ", error);
+                                alert("เกิดข้อผิดพลาดในการแก้ไขข้อมูล: " + error.message);
+                            });
+                    } else {
+                        const newTransferRef = window.fbPush(window.fbRef(window.fbDb, 'transfers'));
+                        window.fbSet(newTransferRef, dataToSave)
+                            .then(() => {
+                                alert('บันทึกข้อมูลสำเร็จ! ✨');
+                                preTransferForm.reset();
+                                document.getElementById('airway-other-input').classList.add('hidden');
+                                document.getElementById('preparation-other-input').classList.add('hidden');
+                                document.getElementById('operating-room-other-input').classList.add('hidden');
+                                document.getElementById('destination-other-input').classList.add('hidden');
+                                showSection('part2'); 
+                            })
+                            .catch((error) => {
+                                console.error("Error saving new data: ", error);
+                                alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + error.message);
+                            });
+                    }
+                });
+            } else {
+                console.error("preTransferForm not found during event listener setup in initializeApp.");
+            }
+            showSection('part1'); 
+            loadDataFromFirebase(); // Load initial data after event listeners are set up
+        }
+
+        // This is the primary DOMContentLoaded listener for the main script.
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Main script: DOMContentLoaded fired.");
+            // Firebase initialization is handled by the module script.
+            // We need to ensure Firebase is ready before calling initializeApp.
+            // A simple way is to wait a bit or check for window.fbDb.
+            function checkFirebaseAndInit() {
+                if (window.fbDb) {
+                    console.log("Main script: Firebase is ready, calling initializeApp().");
+                    initializeApp();
+                } else {
+                    console.log("Main script: Firebase not ready yet, retrying in 100ms.");
+                    setTimeout(checkFirebaseAndInit, 100);
+                }
+            }
+            checkFirebaseAndInit();
+        });
+
+    </script>
+    
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import { getDatabase, ref, set, get, onValue, push, remove, update, child } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+    
+      console.log("Firebase module script started.");
+      const firebaseConfig = {
+        apiKey: "AIzaSyDqOl8qFPVpRhMJaeCXCvziclCdHNZiZnY",
+        authDomain: "transfer-anes-9b29c.firebaseapp.com",
+        databaseURL: "https://transfer-anes-9b29c-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "transfer-anes-9b29c",
+        storageBucket: "transfer-anes-9b29c.appspot.com", 
+        messagingSenderId: "211727200761",
+        appId: "1:211727200761:web:d0943b99b23f0a8aaf8d28"
+      };
+
+      try {
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        window.fbDb = database;
+        window.fbRef = ref;
+        window.fbSet = set;
+        window.fbGet = get;
+        window.fbOnValue = onValue;
+        window.fbPush = push;
+        window.fbRemove = remove;
+        window.fbUpdate = update;
+        window.fbChild = child;
+        console.log("Firebase initialized and functions attached to window.");
+      } catch (error) {
+          console.error("Firebase initialization error:", error);
+          alert("เกิดข้อผิดพลาดในการเริ่มต้น Firebase: " + error.message);
+      }
+      // The main script's DOMContentLoaded will now handle calling initializeApp and loadDataFromFirebase
+      // after checking if window.fbDb is available.
+    </script>
+
+</body>
+</html>
